@@ -1,6 +1,7 @@
 {
     "product-id": 501,
     "header": "Pick a pick (Vol. 1)",
+    "bar-count": 8,
     "rows": [
         {
             "label": "Übung 1",
