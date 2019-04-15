@@ -1,0 +1,19 @@
+table {
+    width: 100%;
+}
+
+th,
+td {
+    text-align: left;
+    font-weight: normal;
+}
+
+h1 {
+    margin-bottom: 5px;
+}
+
+h2 {
+    font-size: 17px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}

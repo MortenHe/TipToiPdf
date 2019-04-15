@@ -1,0 +1,94 @@
+{
+    "product-id": 501,
+    "header": "Pick a pick (Vol. 1)",
+    "rows": [
+        {
+            "label": "Übung 1",
+            "id": 1,
+            "files": [
+                {
+                    "name": "Tempo 60",
+                    "id": "060"
+                },
+                {
+                    "name": "Tempo 80",
+                    "id": "080"
+                },
+                {
+                    "name": "Tempo 100",
+                    "id": "100"
+                },
+                {
+                    "name": "Tempo 120",
+                    "id": "120"
+                }
+            ]
+        },
+        {
+            "label": "Übung 2",
+            "id": 2,
+            "files": [
+                {
+                    "name": "Tempo 60",
+                    "id": "060"
+                },
+                {
+                    "name": "Tempo 80",
+                    "id": "080"
+                },
+                {
+                    "name": "Tempo 100",
+                    "id": "100"
+                },
+                {
+                    "name": "Tempo 120",
+                    "id": "120"
+                }
+            ]
+        },
+        {
+            "label": "Übung 3",
+            "id": 3,
+            "files": [
+                {
+                    "name": "Tempo 60",
+                    "id": "060"
+                },
+                {
+                    "name": "Tempo 80",
+                    "id": "080"
+                },
+                {
+                    "name": "Tempo 100",
+                    "id": "100"
+                },
+                {
+                    "name": "Tempo 120",
+                    "id": "120"
+                }
+            ]
+        },
+        {
+            "label": "Übung 4",
+            "id": 4,
+            "files": [
+                {
+                    "name": "Tempo 60",
+                    "id": "060"
+                },
+                {
+                    "name": "Tempo 80",
+                    "id": "080"
+                },
+                {
+                    "name": "Tempo 100",
+                    "id": "100"
+                },
+                {
+                    "name": "Tempo 120",
+                    "id": "120"
+                }
+            ]
+        }
+    ]
+}

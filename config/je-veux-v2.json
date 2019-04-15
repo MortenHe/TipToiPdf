@@ -1,0 +1,72 @@
+{
+    "product-id": 502,
+    "header": "Je veux (V2)",
+    "rows": [
+        {
+            "label": "Rechte Hand",
+            "id": "rh",
+            "files": [
+                {
+                    "name": "Tempo 60",
+                    "id": "060"
+                },
+                {
+                    "name": "Tempo 80",
+                    "id": "080"
+                },
+                {
+                    "name": "Tempo 100",
+                    "id": "100"
+                },
+                {
+                    "name": "Tempo 120",
+                    "id": "120"
+                }
+            ]
+        },
+        {
+            "label": "Linke Hand",
+            "id": "lh",
+            "files": [
+                {
+                    "name": "Tempo 60",
+                    "id": "060"
+                },
+                {
+                    "name": "Tempo 80",
+                    "id": "080"
+                },
+                {
+                    "name": "Tempo 100",
+                    "id": "100"
+                },
+                {
+                    "name": "Tempo 120",
+                    "id": "120"
+                }
+            ]
+        },
+        {
+            "label": "Beide Hände",
+            "id": "both",
+            "files": [
+                {
+                    "name": "Tempo 60",
+                    "id": "060"
+                },
+                {
+                    "name": "Tempo 80",
+                    "id": "080"
+                },
+                {
+                    "name": "Tempo 100",
+                    "id": "100"
+                },
+                {
+                    "name": "Tempo 120",
+                    "id": "120"
+                }
+            ]
+        }
+    ]
+}
