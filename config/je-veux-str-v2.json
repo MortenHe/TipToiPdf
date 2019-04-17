@@ -2,18 +2,14 @@
     "product-id": 502,
     "header": "Je veux - Strophe (V2)",
     "split-bar-count": -1,
-    "parts": {
-        "key": [
-            0,
-            1
-        ]
-    },
     "rows": [
         {
             "label": "Rechte Hand",
             "id": "rh",
+            "mute": [
+                1
+            ],
             "tempos": [
-                60,
                 80,
                 100,
                 120
@@ -22,8 +18,10 @@
         {
             "label": "Linke Hand",
             "id": "lh",
+            "mute": [
+                0
+            ],
             "tempos": [
-                60,
                 80,
                 100,
                 120
@@ -33,7 +31,6 @@
             "label": "Beide Hände",
             "id": "both",
             "tempos": [
-                60,
                 80,
                 100,
                 120

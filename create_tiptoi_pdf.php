@@ -7,16 +7,18 @@ require_once __DIR__ . '/vendor/autoload.php';
 $project_name = "je-veux-str-v2";
 //$project_name = "pick-a-pick-vol-1";
 
+//Allgemeine Config mit Pfaden zu Dateien
+$config = json_decode(file_get_contents(__DIR__ . "/config/config.json"), true);
+
 //JSON-Config laden. Hier ist neben project-id und Ueberschrift auch hinterlegt, welche Files es gibt und wie sie optisch strukturiert sind
-$config = json_decode(file_get_contents(__DIR__ . "/config/" . $project_name . ".json"), true);
-$product_id = $config["product-id"];
+$project_config = json_decode(file_get_contents(__DIR__ . "/config/" . $project_name . ".json"), true);
+$product_id = $project_config["product-id"];
 
 //Nach wie vielen Takten startet die neue Uebung (fuer Split der mp3)?
-$split_bar_count = $config["split-bar-count"];
+$split_bar_count = $project_config["split-bar-count"];
 
 //In Projektordner wechseln
-$dir = "C:\Users\Martin\Desktop\Google Drive\Martin\TipToi Tool\david-maya";
-$project_dir = $dir . "/" . $project_name;
+$project_dir = $config["tiptoi_dir"] . "/" . $project_name;
 chdir($project_dir);
 
 //Ueber mp3s gehen, die gesplittet werden muessen (diese Dateien gibt es nur bei Uebungen, die gesplittet werden muessen)
@@ -34,7 +36,7 @@ foreach (glob("full_*.mp3") as $full_file) {
 }
 
 //HTML fuer PDF-Datei mit Codes erstellen: Ueberschrift oben
-$html = "<h1>" . $config["header"] . "</h1>";
+$html = "<h1>" . $project_config["header"] . "</h1>";
 
 //Anmelde-Symbol
 $html .= "<img src='oid-" . $product_id . "-START.png' />";
@@ -64,7 +66,7 @@ foreach (glob("../*.mp3") as $file) {
 }
 
 //Ueber Rows (=Uebungen) des Projekts gehen
-foreach ($config["rows"] as $row) {
+foreach ($project_config["rows"] as $row) {
 
     //Ueberschrift der Uebung ("Uebung 1" vs. "Rechte Hand")
     $html .= "<div><h2>" . $row["label"] . "</h2>";
@@ -109,7 +111,7 @@ fclose($fh);
 shell_exec('tttool assemble ' . $yaml_file);
 
 //OID-Codes erstellen
-shell_exec('tttool oid-codes ' . $yaml_file . ' --pixel-size 4 --code-dim 20');
+shell_exec('tttool oid-codes ' . $yaml_file . ' --pixel-size 5 --code-dim 20');
 
 //PDF-Datei vorbereiten
 $mpdf = new Mpdf();

@@ -57,27 +57,80 @@ if ($split_bar_count > 0) {
         //Tempo-Tag auf passenden Wert setzen (z.B. 60)
         $tempo_tag->setAttribute("tempo", $tempo);
 
-        //Neue musicxml-Datei erzeugen (z.B. pick-a-pick-vol-1_60.musicxml) und den angepassten XML-Inhalt schreiben (mit neuem Tempo)
-        $tempo_musicxml_file = $project_name . "_" . $tempo . ".musicxml";
-        $fh = fopen($tempo_musicxml_file, "w");
-        fwrite($fh, $domdoc->saveXML());
-        fclose($fh);
+        //Dateiname fuer temp. musicxml und mscz-Dateien fuer die Audioerzeugung
+        $filename_prefix = $project_name . "_" . $tempo;
 
-        //Neu erzeugte musicxml-Datei mit passendem Tempo (z.B. pick-a-pick-vol-1_60.musicxml) zu mscz-Datei konvertieren (z.B. pick-a-pick-vol-1_60.mscz)
-        $tempo_mscz_file = $project_name . "_" . $tempo . ".mscz";
-        $musicxmal_to_mscz_command = 'MuseScore3.exe "' . $tempo_musicxml_file . '" -o "' . $tempo_mscz_file . '"';
-        shell_exec($musicxmal_to_mscz_command);
+        //Praefix full wichtig fuer 2. Skript, welches die full-Dateien aufteilt
+        $output_filename_prefix = "full_" . $tempo;
 
-        //Aus mscz-_Datei mit passendem Tempo (z.B. pick-a-pick-vol-1_60.mscz) eine mp3-Datei erzeugen mit passendem Tempo (full_60.mp3) -> Praefix full wichtig fuer 2. Skript
-        $tempo_mp3_file = "full_" . $tempo . ".mp3";
-        $mscz_to_mp3_command = 'MuseScore3.exe "' . $tempo_mscz_file . '" -o "' . $tempo_mp3_file . '"';
-        shell_exec($mscz_to_mp3_command);
+        //Audio-Datei erstellen
+        createAudioFile($filename_prefix, $output_filename_prefix, $domdoc);
     }
 }
 
-//es ist ein Projekt, bei dem
+//es ist ein Projekt, bei dem nicht gesplittet wird, sondern die ganze Audio-Datei verarbeitet wird
+//dafuer ggf. verschiedene Exporte mit gemuteten Spuren
 else {
 
+    //Lautstaerke-Tags holen (Klavier 1, Klavier 2, Gitarre, div. Percussions)
+    $score_parts = $xpath->query("//score-part/*/volume");
+
+    //Ueber Uebungen (z.B. rechte Hand, linke Hand) gehen
+    foreach ($project_config["rows"] as $row) {
+
+        //ID fuer Benennung der files
+        $row_id = $row["id"];
+
+        //Zunaechst allen Instrumenten die Lautstaerke 78 geben
+        foreach ($score_parts as $score_part) {
+            $score_part->nodeValue = 78;
+        }
+
+        //Wenn in dieser Uebung ein Instrument gemutet werden soll (z.B. linke Hand gemutet), ueber die Indexe der gemuteten Instrumente gehen
+        if (isset($row["mute"])) {
+            foreach ($row["mute"] as $mute_idx) {
+
+                //den gewuneschten Part muten -> volume = 0
+                $score_parts->item($mute_idx)->nodeValue = 0;
+            }
+        }
+
+        //Ueber Tempos einer Uebung gehen
+        foreach ($row["tempos"] as $tempo) {
+
+            //Tempo-Tag auf passenden Wert setzen (z.B. 60)
+            $tempo_tag->setAttribute("tempo", $tempo);
+
+            //Dateiname fuer temp. musicxml und mscz-Dateien fuer die Audioerzeugung
+            $filename_prefix = $row_id . "_" . $tempo;
+
+            //Dateiname fuer Audio-Datei (wichtig fuer 2. Skript)
+            $output_filename_prefix = $row_id . "_" . $tempo;
+
+            //Audio-Datei erzeugen
+            createAudioFile($filename_prefix, $output_filename_prefix, $domdoc);
+        }
+    }
+}
+
+//Audio-Datei erstellen
+function createAudioFile($filename_prefix, $output_filename_prefix, $domdoc) {
+
+    //musicxml-Datei mit angepasstem XML (Tempo, ggf. gemutete Instrumente)
+    $tempo_musicxml_file = $filename_prefix . ".musicxml";
+    $fh = fopen($tempo_musicxml_file, "w");
+    fwrite($fh, $domdoc->saveXML());
+    fclose($fh);
+
+    //Neu erzeugte musicxml-Datei (z.B. pick-a-pick-vol-1_60.musicxml) zu mscz-Datei konvertieren (z.B. pick-a-pick-vol-1_60.mscz)
+    $tempo_mscz_file = $filename_prefix . ".mscz";
+    $musicxmal_to_mscz_command = 'MuseScore3.exe "' . $tempo_musicxml_file . '" -o "' . $tempo_mscz_file . '"';
+    shell_exec($musicxmal_to_mscz_command);
+
+    //Aus mscz-_Datei (z.B. pick-a-pick-vol-1_60.mscz) eine mp3-Datei erzeugen (full_60.mp3)
+    $tempo_mp3_file = $output_filename_prefix . ".mp3";
+    $mscz_to_mp3_command = 'MuseScore3.exe "' . $tempo_mscz_file . '" -o "' . $tempo_mp3_file . '"';
+    shell_exec($mscz_to_mp3_command);
 }
 
 //tempo musicxml und mscz-Dateien in tiptoi_dir-Subfolder loeschen
