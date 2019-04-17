@@ -1,3 +1,10 @@
+# tttool.exe in TipToiPdf Ordner kopieren (wird nicht versioniert) und zu PATH hinzufügen
+
+# MuseScore3.exe in musescore/bin zu PATH hinzufügen
 # Musescore
 - Schlagzeugstur als Metronom anlegen
-- als mp3 exportieren mit Tempo 60, 80, 100, 120 als full_060.mp3, full_080.mp3
+
+TODO
+tiptoi-Tool/david-maya anlegen, falls nicht existiert
+config.json DIST
+project.json DIST

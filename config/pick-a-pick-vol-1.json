@@ -1,0 +1,48 @@
+{
+    "product-id": 501,
+    "header": "Pick a pick (Vol. 1)",
+    "split-bar-count": 8,
+    "parts": null,
+    "rows": [
+        {
+            "label": "Übung 1",
+            "id": 1,
+            "tempos": [
+                60,
+                80,
+                100,
+                120
+            ]
+        },
+        {
+            "label": "Übung 2",
+            "id": 2,
+            "tempos": [
+                60,
+                80,
+                100,
+                120
+            ]
+        },
+        {
+            "label": "Übung 3",
+            "id": 3,
+            "tempos": [
+                60,
+                80,
+                100,
+                120
+            ]
+        },
+        {
+            "label": "Übung 4",
+            "id": 4,
+            "tempos": [
+                60,
+                80,
+                100,
+                120
+            ]
+        }
+    ]
+}

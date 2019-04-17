@@ -1,72 +1,42 @@
 {
     "product-id": 502,
     "header": "Je veux - Strophe (V2)",
-    "bar-count": -1,
+    "split-bar-count": -1,
+    "parts": {
+        "key": [
+            0,
+            1
+        ]
+    },
     "rows": [
         {
             "label": "Rechte Hand",
             "id": "rh",
-            "files": [
-                {
-                    "name": "Tempo 60",
-                    "id": "060"
-                },
-                {
-                    "name": "Tempo 80",
-                    "id": "080"
-                },
-                {
-                    "name": "Tempo 100",
-                    "id": "100"
-                },
-                {
-                    "name": "Tempo 120",
-                    "id": "120"
-                }
+            "tempos": [
+                60,
+                80,
+                100,
+                120
             ]
         },
         {
             "label": "Linke Hand",
             "id": "lh",
-            "files": [
-                {
-                    "name": "Tempo 60",
-                    "id": "060"
-                },
-                {
-                    "name": "Tempo 80",
-                    "id": "080"
-                },
-                {
-                    "name": "Tempo 100",
-                    "id": "100"
-                },
-                {
-                    "name": "Tempo 120",
-                    "id": "120"
-                }
+            "tempos": [
+                60,
+                80,
+                100,
+                120
             ]
         },
         {
             "label": "Beide Hände",
             "id": "both",
-            "files": [
-                {
-                    "name": "Tempo 60",
-                    "id": "060"
-                },
-                {
-                    "name": "Tempo 80",
-                    "id": "080"
-                },
-                {
-                    "name": "Tempo 100",
-                    "id": "100"
-                },
-                {
-                    "name": "Tempo 120",
-                    "id": "120"
-                }
+            "tempos": [
+                60,
+                80,
+                100,
+                120
             ]
         }
     ]
