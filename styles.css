@@ -9,11 +9,27 @@ td {
 }
 
 h1 {
-    margin-bottom: 5px;
+    margin-bottom: 0px;
 }
 
 h2 {
     font-size: 17px;
     margin-top: 30px;
     margin-bottom: 10px;
+}
+
+.t_l {
+    text-align: left;
+}
+
+.t_r {
+    text-align: right;
+}
+
+.m_b_10 {
+    margin-bottom: 10px;
+}
+
+.instrument {
+    width: 50px;
 }

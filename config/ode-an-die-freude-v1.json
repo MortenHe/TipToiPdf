@@ -1,0 +1,70 @@
+{
+    "product-id": 505,
+    "header": "Ode an die Freude (V1)",
+    "instruments": [
+        "git",
+        "key"
+    ],
+    "rows": [
+        {
+            "label": "Gitarre",
+            "id": "git",
+            "mute": [
+                1,
+                2
+            ],
+            "tempos": [
+                80,
+                100,
+                120
+            ]
+        },
+        {
+            "label": "Klavier - Rechte Hand",
+            "id": "rh",
+            "mute": [
+                0,
+                2
+            ],
+            "tempos": [
+                80,
+                100,
+                120
+            ]
+        },
+        {
+            "label": "Klavier - Linke Hand",
+            "id": "lh",
+            "mute": [
+                0,
+                1
+            ],
+            "tempos": [
+                80,
+                100,
+                120
+            ]
+        },
+        {
+            "label": "Klavier - Beide Hände",
+            "id": "both",
+            "mute": [
+                0
+            ],
+            "tempos": [
+                80,
+                100,
+                120
+            ]
+        },
+        {
+            "label": "Gitarre + Klavier",
+            "id": "all",
+            "tempos": [
+                80,
+                100,
+                120
+            ]
+        }
+    ]
+}

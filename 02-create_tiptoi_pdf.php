@@ -4,8 +4,11 @@ use Mpdf\Mpdf;
 require_once __DIR__ . '/vendor/autoload.php';
 
 //Projektname (Name des Ordners in dem die mp3 files liegen)
-$project_name = "je-veux-str-v2";
+//$project_name = "je-veux-str-v2";
+//$project_name = "je-veux-ref-v2";
 //$project_name = "pick-a-pick-vol-1";
+//$project_name = "pick-a-pick-vol-2";
+$project_name = "ode-an-die-freude-v1";
 
 //Allgemeine Config mit Pfaden zu Dateien
 $config = json_decode(file_get_contents(__DIR__ . "/config/config.json"), true);
@@ -14,8 +17,8 @@ $config = json_decode(file_get_contents(__DIR__ . "/config/config.json"), true);
 $project_config = json_decode(file_get_contents(__DIR__ . "/config/" . $project_name . ".json"), true);
 $product_id = $project_config["product-id"];
 
-//Nach wie vielen Takten startet die neue Uebung (fuer Split der mp3)?
-$split_bar_count = $project_config["split-bar-count"];
+//Nach wie vielen Takten startet die neue Uebung (fuer Split der mp3)? Sofern Merkmal gesetzt
+$split_bar_count = $project_config["split-bar-count"] ?? -1;
 
 //In Projektordner wechseln
 $project_dir = $config["tiptoi_dir"] . "/" . $project_name;
@@ -36,16 +39,22 @@ foreach (glob("full_*.mp3") as $full_file) {
 }
 
 //HTML fuer PDF-Datei mit Codes erstellen: Ueberschrift oben
-$html = "<h1>" . $project_config["header"] . "</h1>";
+$html = "<table><tr><td class='t_l'><h1>" . $project_config["header"] . "</h1></td>";
 
 //Anmelde-Symbol
-$html .= "<img src='oid-" . $product_id . "-START.png' />";
+$html .= "<td><img src='oid-" . $product_id . "-START.png' /></td>";
+
+//Instrumentenbild (key / git)
+foreach ($project_config["instruments"] as $instrument) {
+    $html .= "<td class='t_r instrument'><img style='margin-left: 20px; top: 10px' src='../" . $instrument . ".png' /></td>";
+}
+$html .= "</tr></table>";
 
 //Stop-Symbol
-$html .= "<div><h2>Stop</h2><img src='oid-" . $product_id . "-stop.png' /></div>";
+$html .= "<h2>Stop</h2><img src='oid-" . $product_id . "-stop.png' />";
 
 //Yaml-Datei erzeugen
-$yaml_file = $project_name . ".yaml";
+$yaml_file = "tt-" . $project_name . ".yaml";
 $fh = fopen($yaml_file, "w");
 
 //Product-ID eintragen
@@ -71,15 +80,11 @@ foreach ($project_config["rows"] as $row) {
     //Ueberschrift der Uebung ("Uebung 1" vs. "Rechte Hand")
     $html .= "<div><h2>" . $row["label"] . "</h2>";
 
-    //Benennung und OID-Code der Uebung als th und td einer Tabelle
-    $th_row = "";
+    //Tempos einer Uebung
     $td_row = "";
 
     //Ueber tempos einer Uebung gehen
     foreach ($row["tempos"] as $tempo) {
-
-        //Benennung -> T 80
-        $th_row .= "<th>T " . $tempo . "</th>";
 
         //OID-Code als Bild
         $td_row .= "<td><img src='oid-" . $product_id . "-t_" . $row["id"] . "_" . $tempo . ".png' /></td>";
@@ -102,8 +107,8 @@ foreach ($project_config["rows"] as $row) {
         }
     }
 
-    //fuer diese Uebung eine Tabelle anlegen (Ueberschriften als th + Bilder als td)
-    $html .= "<table><tr>" . $th_row . "</tr><tr>" . $td_row . "</tr></table></div>";
+    //fuer diese Uebung eine Tabelle anlegen
+    $html .= "<table><tr>" . $td_row . "</tr></table></div>";
 }
 fclose($fh);
 
@@ -112,6 +117,33 @@ shell_exec('tttool assemble ' . $yaml_file);
 
 //OID-Codes erstellen
 shell_exec('tttool oid-codes ' . $yaml_file . ' --pixel-size 5 --code-dim 20');
+
+//Ueber Rows (=Uebungen) und Tempos des Projekts gehen und png-Bilder anpassen (Tempo ueber Code legen)
+foreach ($project_config["rows"] as $row) {
+    foreach ($row["tempos"] as $tempo) {
+
+        //Welcher Code wird bearbeitet?
+        $image = "oid-" . $product_id . "-t_" . $row["id"] . "_" . $tempo . ".png";
+
+        //Create Image From Existing File
+        $png_image = imagecreatefrompng($image);
+
+        //schwarzer Text
+        $black = imagecolorallocate($png_image, 0, 0, 0);
+
+        //Font
+        $font_path = __DIR__ . '/arial-outline.ttf';
+
+        //Print Text (=Tempo) On Image
+        imagettftext($png_image, 250, 0, 35, 350, $black, $font_path, $tempo);
+
+        //Save image
+        imagepng($png_image, $image);
+
+        //Clear Memory
+        imagedestroy($png_image);
+    }
+}
 
 //PDF-Datei vorbereiten
 $mpdf = new Mpdf();
@@ -124,8 +156,17 @@ $stylesheet = file_get_contents(__DIR__ . '/styles.css');
 $mpdf->WriteHTML($stylesheet, \Mpdf\HTMLParserMode::HEADER_CSS);
 $mpdf->WriteHTML($html, \Mpdf\HTMLParserMode::HTML_BODY);
 
+//Footer mit aktuellem Datum
+$mpdf->SetHTMLFooter("<small>" . gmdate("d.m.Y", time()) . "</small>");
+
 //pdf als Datei speichern
-$mpdf->Output($project_name . ".pdf");
+$mpdf->Output("tt-" . $project_name . ".pdf");
+
+//Aus mscz-Datei eine PDF-Datei erzeugen
+$mscz_file = $config["score_dir"] . "/" . $project_name . ".mscz";
+$pdf_file = $project_name . ".pdf";
+$mscz_to_musicxml_command = 'MuseScore3.exe "' . $mscz_file . '" -o ' . $pdf_file;
+shell_exec($mscz_to_musicxml_command);
 
 //Dateisystem aufraeumen
 cleanDir();
@@ -151,6 +192,11 @@ function cleanDir() {
     //oid-pngs entfernen
     foreach (glob("oid-*.png") as $file) {
         unlink($file);
+    }
+
+    //yaml-files entfernen
+    foreach (glob("*.yaml") as $file) {
+        //unlink($file);
     }
 
     //start / stop.mp3 entfernen

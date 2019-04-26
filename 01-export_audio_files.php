@@ -5,8 +5,11 @@
 //Erstellung der mp3 wieder mit mscz, da bei musicxml der Schlagzeug-Sound nicht korrekt geladen wird
 
 //Projektname (Name des Unterordners in score_dir dem die Partitur liegt und Name des Unterordners im tiptoi_dir wohin Audio files exportiert werden)
-$project_name = "je-veux-str-v2";
-//$project_name = "pick-a-pick-vol-1";
+//$project_name = "je-veux-str-v2";
+//$project_name = "je-veux-ref-v2";
+//$project_name = "ode-an-die-freude-v1";
+$project_name = "pick-a-pick-vol-1";
+//$project_name = "pick-a-pick-vol-2";
 
 //Allgemeine Config mit Pfaden zu Dateien
 $config = json_decode(file_get_contents(__DIR__ . "/config/config.json"), true);
@@ -14,17 +17,25 @@ $config = json_decode(file_get_contents(__DIR__ . "/config/config.json"), true);
 //Projekt-Config laden. Ermittelt welche Audio-Dateien erzeugt werden muessen
 $project_config = json_decode(file_get_contents(__DIR__ . "/config/" . $project_name . ".json"), true);
 
-//Nach wie vielen Takten startet die neue Uebung (fuer Split der mp3)?
-$split_bar_count = $project_config["split-bar-count"];
+//Nach wie vielen Takten startet die neue Uebung (fuer Split der mp3) - sofern Merkmal gesetzt?
+$split_bar_count = $project_config["split-bar-count"] ?? -1;
 
 //Projektverzeichnis. Hier werden die temp. musicxml und mscz-Dateien erstellt und die Audio-Dateien exportiert
 $project_dir = $config["tiptoi_dir"] . "/" . $project_name;
+
+//Wenn Projektverzeichnis noch nicht existiert, dieses anlegen
+if (!file_exists($project_dir)) {
+    echo "create folder " . $project_dir . "\n";
+    mkdir($project_dir, 0777, true);
+}
+
+//Ins Projektverzeichnis wechseln, dann muss nicht immer der Pfad angegeben werden ei cmd-Aufrufen
 chdir($project_dir);
 
 //Aus mscz-Datei eine musicxml-Datei erzeugen, damit dort das Tempo angepasst werden kann
 $mscz_file = $config["score_dir"] . "/" . $project_name . ".mscz";
 $musicxml_file = $project_name . ".musicxml";
-$mscz_to_musicxml_command = 'MuseScore3.exe "' . $mscz_file . '" -o "' . $musicxml_file . '"';
+$mscz_to_musicxml_command = 'MuseScore3.exe "' . $mscz_file . '" -o ' . $musicxml_file;
 shell_exec($mscz_to_musicxml_command);
 
 //Musicxml laden, hier kann man das Tempo aendern
@@ -124,12 +135,12 @@ function createAudioFile($filename_prefix, $output_filename_prefix, $domdoc) {
 
     //Neu erzeugte musicxml-Datei (z.B. pick-a-pick-vol-1_60.musicxml) zu mscz-Datei konvertieren (z.B. pick-a-pick-vol-1_60.mscz)
     $tempo_mscz_file = $filename_prefix . ".mscz";
-    $musicxmal_to_mscz_command = 'MuseScore3.exe "' . $tempo_musicxml_file . '" -o "' . $tempo_mscz_file . '"';
+    $musicxmal_to_mscz_command = "MuseScore3.exe " . $tempo_musicxml_file . " -o " . $tempo_mscz_file;
     shell_exec($musicxmal_to_mscz_command);
 
     //Aus mscz-_Datei (z.B. pick-a-pick-vol-1_60.mscz) eine mp3-Datei erzeugen (full_60.mp3)
     $tempo_mp3_file = $output_filename_prefix . ".mp3";
-    $mscz_to_mp3_command = 'MuseScore3.exe "' . $tempo_mscz_file . '" -o "' . $tempo_mp3_file . '"';
+    $mscz_to_mp3_command = "MuseScore3.exe " . $tempo_mscz_file . " -o " . $tempo_mp3_file;
     shell_exec($mscz_to_mp3_command);
 }
 
