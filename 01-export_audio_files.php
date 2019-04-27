@@ -4,15 +4,12 @@
 //Dazu Zwischenschritt musicxml waehlen, um Tempo anpassen zu koennen
 //Erstellung der mp3 wieder mit mscz, da bei musicxml der Schlagzeug-Sound nicht korrekt geladen wird
 
-//Projektname (Name des Unterordners in score_dir dem die Partitur liegt und Name des Unterordners im tiptoi_dir wohin Audio files exportiert werden)
-//$project_name = "je-veux-str-v2";
-//$project_name = "je-veux-ref-v2";
-//$project_name = "ode-an-die-freude-v1";
-$project_name = "pick-a-pick-vol-1";
-//$project_name = "pick-a-pick-vol-2";
-
-//Allgemeine Config mit Pfaden zu Dateien
+//Allgemeine Config mit Pfaden zu Dateien und Projektname
 $config = json_decode(file_get_contents(__DIR__ . "/config/config.json"), true);
+
+//Projektname (Name des Unterordners in score_dir dem die Partitur liegt und Name des Unterordners im tiptoi_dir wohin Audio files exportiert werden)
+$project_name = $config["project_name"];
+echo "Create audio files for project " . $project_name . "\n";
 
 //Projekt-Config laden. Ermittelt welche Audio-Dateien erzeugt werden muessen
 $project_config = json_decode(file_get_contents(__DIR__ . "/config/" . $project_name . ".json"), true);

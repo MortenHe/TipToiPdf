@@ -3,15 +3,12 @@
 use Mpdf\Mpdf;
 require_once __DIR__ . '/vendor/autoload.php';
 
-//Projektname (Name des Ordners in dem die mp3 files liegen)
-//$project_name = "je-veux-str-v2";
-//$project_name = "je-veux-ref-v2";
-//$project_name = "pick-a-pick-vol-1";
-//$project_name = "pick-a-pick-vol-2";
-$project_name = "ode-an-die-freude-v1";
-
-//Allgemeine Config mit Pfaden zu Dateien
+//Allgemeine Config mit Pfaden zu Dateien und Projektname
 $config = json_decode(file_get_contents(__DIR__ . "/config/config.json"), true);
+
+//Projektname (Name des Unterordners in score_dir dem die Partitur liegt und Name des Unterordners im tiptoi_dir wohin Audio files exportiert werden)
+$project_name = $config["project_name"];
+echo "Create tt and pdf files for project " . $project_name . "\n";
 
 //JSON-Config laden. Hier ist neben project-id und Ueberschrift auch hinterlegt, welche Files es gibt und wie sie optisch strukturiert sind
 $project_config = json_decode(file_get_contents(__DIR__ . "/config/" . $project_name . ".json"), true);
@@ -80,7 +77,7 @@ foreach ($project_config["rows"] as $row) {
     //Ueberschrift der Uebung ("Uebung 1" vs. "Rechte Hand")
     $html .= "<div><h2>" . $row["label"] . "</h2>";
 
-    //Tempos einer Uebung
+    //Tempos einer Uebung in Tabelle sammeln
     $td_row = "";
 
     //Ueber tempos einer Uebung gehen
