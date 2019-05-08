@@ -5,14 +5,14 @@
 //Erstellung der mp3 wieder mit mscz, da bei musicxml der Schlagzeug-Sound nicht korrekt geladen wird
 
 //Allgemeine Config mit Pfaden zu Dateien und Projektname
-$config = json_decode(file_get_contents(__DIR__ . "/config/config.json"), true);
+$config = json_decode(file_get_contents("config.json"), true);
 
 //Projektname (Name des Unterordners in score_dir dem die Partitur liegt und Name des Unterordners im tiptoi_dir wohin Audio files exportiert werden)
 $project_name = $config["project_name"];
 echo "Create audio files for project " . $project_name . "\n";
 
 //Projekt-Config laden. Ermittelt welche Audio-Dateien erzeugt werden muessen
-$project_config = json_decode(file_get_contents(__DIR__ . "/config/" . $project_name . ".json"), true);
+$project_config = json_decode(file_get_contents(__DIR__ . "/songs/" . $project_name . ".json"), true);
 
 //Nach wie vielen Takten startet die neue Uebung (fuer Split der mp3) - sofern Merkmal gesetzt?
 $split_bar_count = $project_config["split-bar-count"] ?? -1;

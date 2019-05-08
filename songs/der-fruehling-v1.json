@@ -1,0 +1,20 @@
+{
+    "product-id": 510,
+    "header": "Der Frühling (V1)",
+    "instruments": [
+        "git"
+    ],
+    "info": "Das Lied beginnt mit einer Viertel Note Auftakt. Das Metronom zählt daher nur 3 Schläge ein.",
+    "count_in": "3_4",
+    "rows": [
+        {
+            "label": "Melodie",
+            "id": 1,
+            "tempos": [
+                80,
+                100,
+                120
+            ]
+        }
+    ]
+}

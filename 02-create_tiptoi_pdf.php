@@ -4,18 +4,42 @@ use Mpdf\Mpdf;
 require_once __DIR__ . '/vendor/autoload.php';
 
 //Allgemeine Config mit Pfaden zu Dateien und Projektname
-$config = json_decode(file_get_contents(__DIR__ . "/config/config.json"), true);
+$config = json_decode(file_get_contents("config.json"), true);
 
 //Projektname (Name des Unterordners in score_dir dem die Partitur liegt und Name des Unterordners im tiptoi_dir wohin Audio files exportiert werden)
 $project_name = $config["project_name"];
 echo "Create tt and pdf files for project " . $project_name . "\n";
 
 //JSON-Config laden. Hier ist neben project-id und Ueberschrift auch hinterlegt, welche Files es gibt und wie sie optisch strukturiert sind
-$project_config = json_decode(file_get_contents(__DIR__ . "/config/" . $project_name . ".json"), true);
+$project_config = json_decode(file_get_contents(__DIR__ . "/songs/" . $project_name . ".json"), true);
+
+//Ueber alle configs gehen und sicherstellen, dass keine doppelten product-ids verwendet werden
+$other_product_ids = [];
+foreach (glob("songs/*.json") as $file) {
+
+    //config eines products auslesen und auf product-id pruefen
+    $config_to_check = json_decode(file_get_contents($file), true);
+
+    //Wenn product-id bereits in Liste ist, Programm abbrechen
+    $other_product_id = $config_to_check["product-id"];
+    if (in_array($other_product_id, $other_product_ids)) {
+        exit("product-id " . $other_product_id . " wurde mehrfach vergeben");
+    }
+
+    //product-id ist noch nicht in Liste -> sammeln
+    else {
+        $other_product_ids[] = $other_product_id;
+    }
+}
+
+//product-id dieses Produkts auslesen
 $product_id = $project_config["product-id"];
 
 //Nach wie vielen Takten startet die neue Uebung (fuer Split der mp3)? Sofern Merkmal gesetzt
 $split_bar_count = $project_config["split-bar-count"] ?? -1;
+
+//Wie viele Schlaege soll einzaehlt werden, Standard 4 Viertel
+$count_in = $project_config["count_in"] ?? "4_4";
 
 //In Projektordner wechseln
 $project_dir = $config["tiptoi_dir"] . "/" . $project_name;
@@ -46,6 +70,12 @@ foreach ($project_config["instruments"] as $instrument) {
     $html .= "<td class='t_r instrument'><img style='margin-left: 20px; top: 10px' src='../" . $instrument . ".png' /></td>";
 }
 $html .= "</tr></table>";
+
+//Info anzeigen, falls gesetzt (z.B. andere Taktart, Auftakt, etc.)
+$info = $project_config["info"] ?? "";
+if ($info) {
+    $html .= "<h2>Info</h2>" . $info;
+}
 
 //Stop-Symbol
 $html .= "<h2>Stop</h2><img src='oid-" . $product_id . "-stop.png' />";
@@ -89,18 +119,21 @@ foreach ($project_config["rows"] as $row) {
         //Abspielcode in YAML-Datei als Script hinterlegen
         fwrite($fh, "  t_" . $row["id"] . "_" . $tempo . ": P(t_" . $row["id"] . "_" . $tempo . ")\n");
 
+        //Einzaehldatei mit passendem Tempo, Taktart und ggf. Auftakt
+        $count_in_file = "count_in_" . $tempo . "_" . $count_in . ".mp3";
+
         //Wenn die Uebung als gesplittete Datei vorliegt (z.B. pick a pick Uebung 1 als split der full-Datei Uebung 1-4)
         if ($split_bar_count > 0) {
 
             //Count-in-Datei und Split-Datei einer Uebung zu einer mp3 zusammenfuehren
-            shell_exec('copy /b count_in_' . $tempo . '.mp3+split_t_' . ($row["id"] - 1) . "_" . $tempo . '.mp3 t_' . $row["id"] . '_' . $tempo . '.mp3');
+            shell_exec('copy /b ' . $count_in_file . '+split_t_' . ($row["id"] - 1) . "_" . $tempo . '.mp3 t_' . $row["id"] . '_' . $tempo . '.mp3');
         }
 
         //Datei liegt bereits als vollstaendige Datei vor (z.B. je veux -> rechte Hand)
         else {
 
-            //Count-in-Datei und  voll staendige Datei zu einer mp3 zusammenfuehren
-            shell_exec('copy /b count_in_' . $tempo . '.mp3+' . $row["id"] . "_" . $tempo . '.mp3 t_' . $row["id"] . '_' . $tempo . '.mp3');
+            //Count-in-Datei und vollstaendige Datei zu einer mp3 zusammenfuehren
+            shell_exec('copy /b ' . $count_in_file . '+' . $row["id"] . "_" . $tempo . '.mp3 t_' . $row["id"] . '_' . $tempo . '.mp3');
         }
     }
 
