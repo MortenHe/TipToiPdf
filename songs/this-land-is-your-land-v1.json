@@ -1,0 +1,20 @@
+{
+    "product-id": 511,
+    "header": "This land is your land (V1)",
+    "instruments": [
+        "git"
+    ],
+    "info": "Das Lied beginnt mit 3 Viertel Noten Auftakt. Das Metronom zählt 5 Schäge ein = Einen ganzen Takt (4 Schläge) und noch 1 Schlag im Auftakt-Takt.",
+    "count_in": "5_4",
+    "rows": [
+        {
+            "label": "Melodie",
+            "id": 1,
+            "tempos": [
+                80,
+                100,
+                120
+            ]
+        }
+    ]
+}

@@ -37,7 +37,6 @@ shell_exec($mscz_to_musicxml_command);
 
 //Musicxml laden, hier kann man das Tempo aendern
 $domdoc = new DOMDocument();
-$domdoc->preserveWhiteSpace = false;
 $domdoc->loadXML(file_get_contents($musicxml_file));
 $xpath = new DOMXPath($domdoc);
 
@@ -95,10 +94,9 @@ else {
         }
 
         //Wenn in dieser Uebung ein Instrument gemutet werden soll (z.B. linke Hand gemutet), ueber die Indexe der gemuteten Instrumente gehen
+        //und Lautstaerke auf 0 setzen
         if (isset($row["mute"])) {
             foreach ($row["mute"] as $mute_idx) {
-
-                //den gewuneschten Part muten -> volume = 0
                 $score_parts->item($mute_idx)->nodeValue = 0;
             }
         }
@@ -121,6 +119,9 @@ else {
     }
 }
 
+//tempo musicxml und mscz-Dateien in tiptoi_dir-Subfolder loeschen
+cleanDir();
+
 //Audio-Datei erstellen
 function createAudioFile($filename_prefix, $output_filename_prefix, $domdoc) {
 
@@ -141,19 +142,11 @@ function createAudioFile($filename_prefix, $output_filename_prefix, $domdoc) {
     shell_exec($mscz_to_mp3_command);
 }
 
-//tempo musicxml und mscz-Dateien in tiptoi_dir-Subfolder loeschen
-cleanDir();
-
 //Dateisystem aufraeumen
 function cleanDir() {
 
-    //musicxml-Dateien entfernen
-    foreach (glob("*.musicxml") as $file) {
-        unlink($file);
-    }
-
-    //mscz-Dateien entfernen
-    foreach (glob("*.mscz") as $file) {
+    //musicxml- und mscz-Dateien entfernen
+    foreach (glob("*.{musicxml,mscz}", GLOB_BRACE) as $file) {
         unlink($file);
     }
 }

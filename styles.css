@@ -8,6 +8,11 @@ td {
     font-weight: normal;
 }
 
+.checkbox {
+    margin-bottom: 25px;
+    margin-left: 30px;
+}
+
 h1 {
     margin-bottom: 0px;
 }
@@ -32,4 +37,9 @@ h2 {
 
 .instrument {
     width: 50px;
+}
+
+.instrument_img {
+    margin-left: 20px;
+    top: 10px;
 }
