@@ -1,5 +1,7 @@
 <?php
 
+//TipToi-GME-Datei erstellen, dazu TipToi-PDF anhand der JSON-Config, sowie Noten-PDF aus mscz-Datei
+
 use Mpdf\Mpdf;
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -14,23 +16,7 @@ echo "Create tt and pdf files for project " . $project_name . "\n";
 $project_config = json_decode(file_get_contents(__DIR__ . "/songs/" . $project_name . ".json"), true);
 
 //Ueber alle configs gehen und sicherstellen, dass keine doppelten product-ids verwendet werden
-$other_product_ids = [];
-foreach (glob("songs/*.json") as $file) {
-
-    //config eines products auslesen und auf product-id pruefen
-    $config_to_check = json_decode(file_get_contents($file), true);
-
-    //Wenn product-id bereits in Liste ist, Programm abbrechen
-    $other_product_id = $config_to_check["product-id"];
-    if (in_array($other_product_id, $other_product_ids)) {
-        exit("product-id " . $other_product_id . " wurde mehrfach vergeben");
-    }
-
-    //product-id ist noch nicht in Liste -> sammeln
-    else {
-        $other_product_ids[] = $other_product_id;
-    }
-}
+confirmUniqueProductIDs();
 
 //product-id dieses Produkts auslesen
 $product_id = $project_config["product-id"];
@@ -59,7 +45,7 @@ foreach (glob("full_*.mp3") as $full_file) {
     $out = shell_exec('ffmpeg -hide_banner -loglevel panic -i ' . $full_file . ' -f segment -segment_time ' . $split_time . ' -c copy split_t_%0d_' . $tempo . '.mp3');
 }
 
-//HTML fuer PDF-Datei mit Codes erstellen: Ueberschrift oben
+//HTML fuer TT-PDF-Datei mit Codes erstellen: Ueberschrift oben
 $html = "<table><tr><td class='t_l'><h1>" . $project_config["header"] . "</h1></td>";
 
 //Anmelde-Symbol
@@ -67,7 +53,7 @@ $html .= "<td><img src='oid-" . $product_id . "-START.png' /></td>";
 
 //Instrumentenbild (key / git)
 foreach ($project_config["instruments"] as $instrument) {
-    $html .= "<td class='t_r instrument'><img style='margin-left: 20px; top: 10px' src='../" . $instrument . ".png' /></td>";
+    $html .= "<td class='t_r instrument'><img class='instrument_img' src='../" . $instrument . ".png' /></td>";
 }
 $html .= "</tr></table>";
 
@@ -113,11 +99,14 @@ foreach ($project_config["rows"] as $row) {
     //Ueber tempos einer Uebung gehen
     foreach ($row["tempos"] as $tempo) {
 
+        //Code-Benennung fuer YAML-Datei und code-images
+        $code_id = "t_" . $row["id"] . "_" . $tempo;
+
         //OID-Code als Bild
-        $td_row .= "<td><img src='oid-" . $product_id . "-t_" . $row["id"] . "_" . $tempo . ".png' /></td>";
+        $td_row .= "<td><img src='oid-" . $product_id . "-" . $code_id . ".png' /><img class='checkbox' width=20 height=20 src='" . __DIR__ . "/checkbox.svg' /></td>";
 
         //Abspielcode in YAML-Datei als Script hinterlegen
-        fwrite($fh, "  t_" . $row["id"] . "_" . $tempo . ": P(t_" . $row["id"] . "_" . $tempo . ")\n");
+        fwrite($fh, "  " . $code_id . ": P(" . $code_id . ")\n");
 
         //Einzaehldatei mit passendem Tempo, Taktart und ggf. Auftakt
         $count_in_file = "count_in_" . $tempo . "_" . $count_in . ".mp3";
@@ -126,14 +115,14 @@ foreach ($project_config["rows"] as $row) {
         if ($split_bar_count > 0) {
 
             //Count-in-Datei und Split-Datei einer Uebung zu einer mp3 zusammenfuehren
-            shell_exec('copy /b ' . $count_in_file . '+split_t_' . ($row["id"] - 1) . "_" . $tempo . '.mp3 t_' . $row["id"] . '_' . $tempo . '.mp3');
+            shell_exec("copy /b " . $count_in_file . "+split_t_" . ($row["id"] - 1) . "_" . $tempo . ".mp3 " . $code_id . ".mp3");
         }
 
         //Datei liegt bereits als vollstaendige Datei vor (z.B. je veux -> rechte Hand)
         else {
 
             //Count-in-Datei und vollstaendige Datei zu einer mp3 zusammenfuehren
-            shell_exec('copy /b ' . $count_in_file . '+' . $row["id"] . "_" . $tempo . '.mp3 t_' . $row["id"] . '_' . $tempo . '.mp3');
+            shell_exec("copy /b " . $count_in_file . "+" . $row["id"] . "_" . $tempo . ".mp3 " . $code_id . ".mp3");
         }
     }
 
@@ -142,36 +131,15 @@ foreach ($project_config["rows"] as $row) {
 }
 fclose($fh);
 
-//GME-Datei erstellen
+//GME-Datei und OID-Codes erstellen
 shell_exec('tttool assemble ' . $yaml_file);
-
-//OID-Codes erstellen
 shell_exec('tttool oid-codes ' . $yaml_file . ' --pixel-size 5 --code-dim 20');
 
 //Ueber Rows (=Uebungen) und Tempos des Projekts gehen und png-Bilder anpassen (Tempo ueber Code legen)
 foreach ($project_config["rows"] as $row) {
     foreach ($row["tempos"] as $tempo) {
-
-        //Welcher Code wird bearbeitet?
         $image = "oid-" . $product_id . "-t_" . $row["id"] . "_" . $tempo . ".png";
-
-        //Create Image From Existing File
-        $png_image = imagecreatefrompng($image);
-
-        //schwarzer Text
-        $black = imagecolorallocate($png_image, 0, 0, 0);
-
-        //Font
-        $font_path = __DIR__ . '/arial-outline.ttf';
-
-        //Print Text (=Tempo) On Image
-        imagettftext($png_image, 250, 0, 35, 350, $black, $font_path, $tempo);
-
-        //Save image
-        imagepng($png_image, $image);
-
-        //Clear Memory
-        imagedestroy($png_image);
+        addTextToImage($image, $tempo);
     }
 }
 
@@ -201,35 +169,48 @@ shell_exec($mscz_to_musicxml_command);
 //Dateisystem aufraeumen
 cleanDir();
 
-//Dateisystem aufraeumen
+//Ueber alle configs gehen und sicherstellen, dass keine doppelten product-ids verwendet werden
+function confirmUniqueProductIDs() {
+    $other_product_ids = [];
+    foreach (glob("songs/*.json") as $file) {
+
+        //config eines products auslesen und auf product-id pruefen
+        $config_to_check = json_decode(file_get_contents($file), true);
+
+        //Wenn product-id bereits in Liste ist, Programm abbrechen
+        $other_product_id = $config_to_check["product-id"];
+        if (in_array($other_product_id, $other_product_ids)) {
+            exit("product-id " . $other_product_id . " wurde mehrfach vergeben");
+        }
+
+        //product-id ist noch nicht in Liste -> sammeln
+        else {
+            $other_product_ids[] = $other_product_id;
+        }
+    }
+}
+
+//Bilddatei mit Text ueberlagern
+function addTextToImage($image, $text, $font_size = 250) {
+
+    //Bildobjekt erstellen
+    $png_image = imagecreatefrompng($image);
+
+    //Textfarbe schwarz und Schriftart setzen
+    $black = imagecolorallocate($png_image, 0, 0, 0);
+    $font_path = __DIR__ . '/arial-outline.ttf';
+
+    //Text einfuegen
+    imagettftext($png_image, $font_size, 0, 35, 350, $black, $font_path, $text);
+
+    //Bild speichern und mem leeren
+    imagepng($png_image, $image);
+    imagedestroy($png_image);
+}
+
+//Dateisystem aufraeumen, temp. Dateien loeschen
 function cleanDir() {
-
-    //erzeute split mp3s entfernen
-    foreach (glob("split_*.mp3") as $file) {
+    foreach (glob("{split_*.mp3,count_*.mp3,t_*.mp3,oid-*.png,start.mp3,stop.mp3,*.yaml}", GLOB_BRACE) as $file) {
         unlink($file);
     }
-
-    //count-in-mp3s entfernen
-    foreach (glob("count_*.mp3") as $file) {
-        unlink($file);
-    }
-
-    //generierte mp3s (count-in + Uebung) fuer scripts entfernen
-    foreach (glob("t_*.mp3") as $file) {
-        unlink($file);
-    }
-
-    //oid-pngs entfernen
-    foreach (glob("oid-*.png") as $file) {
-        unlink($file);
-    }
-
-    //yaml-files entfernen
-    foreach (glob("*.yaml") as $file) {
-        //unlink($file);
-    }
-
-    //start / stop.mp3 entfernen
-    unlink("start.mp3");
-    unlink("stop.mp3");
 }
