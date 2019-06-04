@@ -6,6 +6,7 @@
 
 TODO
 project.json DIST für Piano / Git / beides
+createAudio paralellisieren
 Parts exportieren
 Anmelde und Stop-Symbol mit überlagerter Graphik ggf. auch maskieren (Anmeldebutton rund)
-createSkript, das beide Skripte startet
+createSkript was beide Skripte startet
