@@ -1,6 +1,8 @@
 <?php
 
 //TipToi-GME-Datei erstellen, dazu TipToi-PDF anhand der JSON-Config, sowie Noten-PDF aus mscz-Datei
+//count-in-Dateien muessen vorliegen
+//Druck bei 1200 dpi
 
 use Mpdf\Mpdf;
 require_once __DIR__ . '/vendor/autoload.php';
@@ -111,19 +113,12 @@ foreach ($project_config["rows"] as $row) {
         //Einzaehldatei mit passendem Tempo, Taktart und ggf. Auftakt
         $count_in_file = "count_in_" . $tempo . "_" . $count_in . ".mp3";
 
-        //Wenn die Uebung als gesplittete Datei vorliegt (z.B. pick a pick Uebung 1 als split der full-Datei Uebung 1-4)
-        if ($split_bar_count > 0) {
+        //Wenn die Uebung als gesplittete Datei vorliegt (z.B. pick a pick Uebung 1 als split der full-Datei Uebung 1-4), ansonsten liegt Datei als vollstaendige Datei vor
+        $audio_file = $split_bar_count > 0 ? "split_t_" . ($row["id"] - 1) . "_" . $tempo . ".mp3" : $row["id"] . "_" . $tempo . ".mp3";
 
-            //Count-in-Datei und Split-Datei einer Uebung zu einer mp3 zusammenfuehren
-            shell_exec("copy /b " . $count_in_file . "+split_t_" . ($row["id"] - 1) . "_" . $tempo . ".mp3 " . $code_id . ".mp3");
-        }
-
-        //Datei liegt bereits als vollstaendige Datei vor (z.B. je veux -> rechte Hand)
-        else {
-
-            //Count-in-Datei und vollstaendige Datei zu einer mp3 zusammenfuehren
-            shell_exec("copy /b " . $count_in_file . "+" . $row["id"] . "_" . $tempo . ".mp3 " . $code_id . ".mp3");
-        }
+        //Count-in-Datei und Audio-Datei einer Uebung zu einer mp3 zusammenfuehren
+        $merge_command = 'ffmpeg -y -hide_banner -loglevel panic -i "concat:' . $count_in_file . '|' . $audio_file . '" -acodec copy ' . $code_id . '.mp3';
+        shell_exec($merge_command);
     }
 
     //fuer diese Uebung eine Tabelle anlegen

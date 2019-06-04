@@ -1,0 +1,42 @@
+{
+    "product-id": 512,
+    "header": "Love Story (V1)",
+    "instruments": [
+        "key"
+    ],
+    "rows": [
+        {
+            "label": "Rechte Hand",
+            "id": "rh",
+            "mute": [
+                1
+            ],
+            "tempos": [
+                60,
+                70,
+                80
+            ]
+        },
+        {
+            "label": "Linke Hand",
+            "id": "lh",
+            "mute": [
+                0
+            ],
+            "tempos": [
+                60,
+                70,
+                80
+            ]
+        },
+        {
+            "label": "Beide Hände",
+            "id": "both",
+            "tempos": [
+                60,
+                70,
+                80
+            ]
+        }
+    ]
+}
