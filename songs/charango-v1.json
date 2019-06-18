@@ -1,0 +1,20 @@
+{
+    "product-id": 513,
+    "header": "Charango (V1)",
+    "instruments": [
+        "git"
+    ],
+    "info": "Das Lied beginnt mit 2 Viertel Noten Auftakt. Das Metronom zählt 6 Schäge ein = Einen ganzen Takt (4 Schläge) und noch 2 Schläge im Auftakt-Takt.",
+    "count_in": "6_4",
+    "rows": [
+        {
+            "label": "Melodie",
+            "id": 1,
+            "tempos": [
+                80,
+                100,
+                120
+            ]
+        }
+    ]
+}

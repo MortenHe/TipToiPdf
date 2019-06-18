@@ -1,0 +1,18 @@
+{
+    "product-id": 514,
+    "header": "Seven Nation Army (V1)",
+    "instruments": [
+        "git"
+    ],
+    "rows": [
+        {
+            "label": "Melodie",
+            "id": 1,
+            "tempos": [
+                80,
+                100,
+                120
+            ]
+        }
+    ]
+}

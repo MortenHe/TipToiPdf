@@ -205,7 +205,7 @@ function addTextToImage($image, $text, $font_size = 250) {
 
 //Dateisystem aufraeumen, temp. Dateien loeschen
 function cleanDir() {
-    foreach (glob("{split_*.mp3,count_*.mp3,t_*.mp3,oid-*.png,start.mp3,stop.mp3,*.yaml}", GLOB_BRACE) as $file) {
+    foreach (glob("{split_*.mp3,count_*.mp3,oid-*.png,start.mp3,stop.mp3,*.yaml}", GLOB_BRACE) as $file) {
         unlink($file);
     }
 }

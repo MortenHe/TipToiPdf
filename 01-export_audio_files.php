@@ -7,6 +7,9 @@
 //Allgemeine Config mit Pfaden zu Dateien und Projektname
 $config = json_decode(file_get_contents("config.json"), true);
 
+//Mit welchem Tool sollen die Audiodateien konvertiert werden (Musescore stable vs. Nightly)
+$converter_tool = false ? "Musescore3.exe" : "nightly.exe";
+
 //Projektname (Name des Unterordners in score_dir dem die Partitur liegt und Name des Unterordners im tiptoi_dir wohin Audio files exportiert werden)
 $project_name = $config["project_name"];
 echo "Create audio files for project " . $project_name . "\n";
@@ -32,7 +35,7 @@ chdir($project_dir);
 //Aus mscz-Datei eine musicxml-Datei erzeugen, damit dort das Tempo angepasst werden kann
 $mscz_file = $config["score_dir"] . "/" . $project_name . ".mscz";
 $musicxml_file = $project_name . ".musicxml";
-$mscz_to_musicxml_command = 'MuseScore3.exe "' . $mscz_file . '" -o ' . $musicxml_file;
+$mscz_to_musicxml_command = $converter_tool . ' "' . $mscz_file . '" -o ' . $musicxml_file;
 shell_exec($mscz_to_musicxml_command);
 
 //Musicxml laden, hier kann man das Tempo aendern
@@ -124,6 +127,7 @@ cleanDir();
 
 //Audio-Datei erstellen
 function createAudioFile($filename_prefix, $output_filename_prefix, $domdoc) {
+    global $converter_tool;
 
     //musicxml-Datei mit angepasstem XML (Tempo, ggf. gemutete Instrumente)
     $tempo_musicxml_file = $filename_prefix . ".musicxml";
@@ -133,12 +137,12 @@ function createAudioFile($filename_prefix, $output_filename_prefix, $domdoc) {
 
     //Neu erzeugte musicxml-Datei (z.B. pick-a-pick-vol-1_60.musicxml) zu mscz-Datei konvertieren (z.B. pick-a-pick-vol-1_60.mscz)
     $tempo_mscz_file = $filename_prefix . ".mscz";
-    $musicxmal_to_mscz_command = "MuseScore3.exe " . $tempo_musicxml_file . " -o " . $tempo_mscz_file;
+    $musicxmal_to_mscz_command = $converter_tool . " " . $tempo_musicxml_file . " -o " . $tempo_mscz_file;
     shell_exec($musicxmal_to_mscz_command);
 
     //Aus mscz-_Datei (z.B. pick-a-pick-vol-1_60.mscz) eine mp3-Datei erzeugen (full_60.mp3)
     $tempo_mp3_file = $output_filename_prefix . ".mp3";
-    $mscz_to_mp3_command = "MuseScore3.exe " . $tempo_mscz_file . " -o " . $tempo_mp3_file;
+    $mscz_to_mp3_command = $converter_tool . " " . $tempo_mscz_file . " -o " . $tempo_mp3_file;
     shell_exec($mscz_to_mp3_command);
 }
 
