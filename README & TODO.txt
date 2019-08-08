@@ -10,3 +10,4 @@ createAudio paralellisieren
 Parts exportieren
 Anmelde und Stop-Symbol mit überlagerter Graphik ggf. auch maskieren (Anmeldebutton rund)
 createSkript was beide Skripte startet
+Skript 3. Output dir setzen für kürzere Pfade

@@ -1,3 +1,5 @@
 vendor
 tttool.exe
 config.json
+random_sheets/*.pdf
+random_sheets/*.musicxml
