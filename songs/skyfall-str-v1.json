@@ -1,0 +1,39 @@
+{
+    "product-id": 515,
+    "header": "Skyfall - Strophe (V1)",
+    "instruments": [
+        "key"
+    ],
+    "rows": [
+        {
+            "label": "Rechte Hand",
+            "id": "rh",
+            "mute": [
+                1
+            ],
+            "tempos": [
+                60,
+                75
+            ]
+        },
+        {
+            "label": "Linke Hand",
+            "id": "lh",
+            "mute": [
+                0
+            ],
+            "tempos": [
+                60,
+                75
+            ]
+        },
+        {
+            "label": "Beide Hände",
+            "id": "both",
+            "tempos": [
+                60,
+                75
+            ]
+        }
+    ]
+}

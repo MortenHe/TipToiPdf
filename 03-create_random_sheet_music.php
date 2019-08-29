@@ -22,7 +22,7 @@ $domdoc->loadXML(file_get_contents("random_sheet_template.musicxml"));
 $xpath = new DOMXPath($domdoc);
 
 //Ueberschrift fuer Loesungs-pdf setzen
-$header = "Notenübung " . ucfirst($mode);
+$header = "Notenübung " . ucfirst($mode) . " (" . date('d.m.Y') . ")";
 $xpath->query("//credit-words")->item(0)->nodeValue = $header . " (Lösung)";
 
 //Ueber Noten der Partitur gehen und deren Wert + Text aendern
