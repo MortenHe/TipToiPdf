@@ -102,7 +102,7 @@ foreach ($project_config["rows"] as $row) {
     foreach ($row["tempos"] as $tempo) {
 
         //Code-Benennung fuer YAML-Datei und code-images
-        $code_id = $row["id"] . "_" . $tempo;
+        $code_id = "t_" . $row["id"] . "_" . $tempo;
 
         //OID-Code als Bild
         $td_row .= "<td><img src='oid-" . $product_id . "-" . $code_id . ".png' /><img class='checkbox' width=20 height=20 src='" . __DIR__ . "/checkbox.svg' /></td>";
@@ -133,7 +133,7 @@ shell_exec('tttool oid-codes ' . $yaml_file . ' --pixel-size 5 --code-dim 20');
 //Ueber Rows (=Uebungen) und Tempos des Projekts gehen und png-Bilder anpassen (Tempo ueber Code legen)
 foreach ($project_config["rows"] as $row) {
     foreach ($row["tempos"] as $tempo) {
-        $image = "oid-" . $product_id . "-" . $row["id"] . "_" . $tempo . ".png";
+        $image = "oid-" . $product_id . "-t_" . $row["id"] . "_" . $tempo . ".png";
         addTextToImage($image, $tempo);
     }
 }

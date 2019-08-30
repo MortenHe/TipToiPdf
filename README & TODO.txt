@@ -16,3 +16,6 @@ createSkript was beide Skripte startet
 Skript 3. Output dir setzen für kürzere Pfade
 Skript 00 soll nächste product-id liefern (max + 1)
 Audioerstellung außerhalb von Drive (wegen Einfügen und Löschen von Dateien)
+
+Mögliche Probleme
+Count-in-Datei (z.B. 85_4_4.mp3) existiert noch nicht
