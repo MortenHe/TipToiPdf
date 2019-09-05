@@ -9,136 +9,141 @@ require_once __DIR__ . '/vendor/autoload.php';
 $random_sheet_config = json_decode(file_get_contents("random_sheet_config.json"), true);
 $notes_config = json_decode(file_get_contents("notes_stock.json"), true);
 
-//Liste der Noten und Titel auslesen
-$mode = $random_sheet_config["mode"];
-$notes_stock = $notes_config[$mode];
+//Ueber Modi (david, maya,...) gehen und radnom notes erstellen
+$modes = $random_sheet_config["modes"];
+foreach ($modes as $mode) {
+    echo "create random sheet music for {$mode}\n";
 
-//Wo werden fertige Dateien abgelegt
-$output_dir = "random_sheets";
+    //Liste der Noten und Titel auslesen
+    $notes_stock = $notes_config[$mode];
 
-//Template Datei laden, deren Noten mit random Noten ersetzt werden
-$domdoc = new DOMDocument();
-$domdoc->loadXML(file_get_contents("random_sheet_template.musicxml"));
-$xpath = new DOMXPath($domdoc);
+    //Wo werden fertige Dateien abgelegt
+    $output_dir = "random_sheets";
 
-//Ueberschrift fuer Loesungs-pdf setzen
-$header = "Notenübung " . ucfirst($mode) . " (" . date('d.m.Y') . ")";
-$xpath->query("//credit-words")->item(0)->nodeValue = $header . " (Lösung)";
+    //Template Datei laden, deren Noten mit random Noten ersetzt werden
+    $domdoc = new DOMDocument();
+    $domdoc->loadXML(file_get_contents("random_sheet_template.musicxml"));
+    $xpath = new DOMXPath($domdoc);
 
-//Ueber Noten der Partitur gehen und deren Wert + Text aendern
-$score_notes = $xpath->query("//note");
-foreach ($score_notes as $score_note) {
+    //Ueberschrift fuer Loesungs-pdf setzen
+    $header = "Notenübung " . ucfirst($mode) . " (" . date('d.m.Y') . ")";
+    $xpath->query("//credit-words")->item(0)->nodeValue = $header . " (Lösung)";
 
-    //Zufaellige Note waehlen
-    shuffle($notes_stock);
-    $random_note = $notes_stock[0];
+    //Ueber Noten der Partitur gehen und deren Wert + Text aendern
+    $score_notes = $xpath->query("//note");
+    foreach ($score_notes as $score_note) {
 
-    //Notenwert (A) und Oktvae (2) extrahieren
-    $random_step = $random_note[1];
-    $random_octave = (int) $random_note[0];
+        //Zufaellige Note waehlen
+        shuffle($notes_stock);
+        $random_note = $notes_stock[0];
 
-    //Note und Oktave von zuf. Note setzen
-    $step_node = $xpath->query("pitch/step", $score_note)->item(0)->nodeValue = $random_step;
-    $octave_node = $xpath->query("pitch/octave", $score_note)->item(0);
-    $octave_node->nodeValue = $random_octave + 3;
+        //Notenwert (A) und Oktvae (2) extrahieren
+        $random_step = $random_note[1];
+        $random_octave = (int) $random_note[0];
 
-    //Notenhals nach oben oder unten setzen
-    $stem_node = $xpath->query("stem", $score_note)->item(0);
-    $stem_node->nodeValue = (($random_octave > 1) || $random_octave === 1 && $random_step === "B") ? "down" : "up";
+        //Note und Oktave von zuf. Note setzen
+        $step_node = $xpath->query("pitch/step", $score_note)->item(0)->nodeValue = $random_step;
+        $octave_node = $xpath->query("pitch/octave", $score_note)->item(0);
+        $octave_node->nodeValue = $random_octave + 3;
 
-    //# oder b setzen falls gesetzt
-    $accidental = "";
-    if (isset($random_note[2])) {
+        //Notenhals nach oben oder unten setzen
+        $stem_node = $xpath->query("stem", $score_note)->item(0);
+        $stem_node->nodeValue = (($random_octave > 1) || $random_octave === 1 && $random_step === "B") ? "down" : "up";
 
-        //Alter-Tag erstellen
-        $alter_node = $domdoc->createElement("alter");
-        $alter_node->nodeValue = $random_note[2] === "#" ? 1 : -1;
+        //# oder b setzen falls gesetzt
+        $accidental = "";
+        if (isset($random_note[2])) {
 
-        //Alter-Tag an passender Stelle einfuegen
-        $pitch_node = $xpath->query("pitch", $score_note)->item(0);
-        $pitch_node->insertBefore($alter_node, $octave_node);
+            //Alter-Tag erstellen
+            $alter_node = $domdoc->createElement("alter");
+            $alter_node->nodeValue = $random_note[2] === "#" ? 1 : -1;
 
-        //Accidental-Tag erstellen
-        $acc_node = $domdoc->createElement("accidental");
-        $accidental = $random_note[2] === "#" ? "sharp" : "flat";
-        $acc_node->nodeValue = $accidental;
+            //Alter-Tag an passender Stelle einfuegen
+            $pitch_node = $xpath->query("pitch", $score_note)->item(0);
+            $pitch_node->insertBefore($alter_node, $octave_node);
 
-        //Accidental-Tag an passender Stelle einfuegen
-        $score_note->insertBefore($acc_node, $stem_node);
-    }
+            //Accidental-Tag erstellen
+            $acc_node = $domdoc->createElement("accidental");
+            $accidental = $random_note[2] === "#" ? "sharp" : "flat";
+            $acc_node->nodeValue = $accidental;
 
-    //Notennamen fuer Loesungs-PDF ermitteln. Sondernfall h vs. b
-    $note_name = $random_step === "B" ? "h" : strtolower($random_step);
+            //Accidental-Tag an passender Stelle einfuegen
+            $score_note->insertBefore($acc_node, $stem_node);
+        }
 
-    //Vorzeichen auswerten
-    switch ($accidental) {
+        //Notennamen fuer Loesungs-PDF ermitteln. Sondernfall h vs. b
+        $note_name = $random_step === "B" ? "h" : strtolower($random_step);
 
-    //bei # immer "is" anhaengen
-    case "sharp":
-        $note_name .= "is";
-        break;
+        //Vorzeichen auswerten
+        switch ($accidental) {
 
-    //bei b
-    case "flat":
-        switch ($note_name) {
-
-        //manche Noten mit "es"
-        case "d":case "g":
-            $note_name .= "es";
+        //bei # immer "is" anhaengen
+        case "sharp":
+            $note_name .= "is";
             break;
 
-        //manche Noten nur mit "s"
-        case "e":case "a":
-            $note_name .= "s";
-            break;
+        //bei b
+        case "flat":
+            switch ($note_name) {
 
-        //Sonderfall b
-        case "h":
-            $note_name = "b";
+            //manche Noten mit "es"
+            case "d":case "g":
+                $note_name .= "es";
+                break;
+
+            //manche Noten nur mit "s"
+            case "e":case "a":
+                $note_name .= "s";
+                break;
+
+            //Sonderfall b
+            case "h":
+                $note_name = "b";
+                break;
+            }
             break;
         }
-        break;
+
+        //Notennamen mit passender Oktave als Notentext setzen
+        $xpath->query("lyric/text", $score_note)->item(0)->nodeValue = $note_name . " " . $random_octave;
     }
 
-    //Notennamen mit passender Oktave als Notentext setzen
-    $xpath->query("lyric/text", $score_note)->item(0)->nodeValue = $note_name . " " . $random_octave;
+    //musicxml-Datei mit random Noten und Notentext erzeugen
+    $random_sheet_file = "random.musicxml";
+    $fh = fopen($output_dir . "/" . $random_sheet_file, "w");
+    fwrite($fh, $domdoc->saveXML());
+    fclose($fh);
+
+    //Aus musicxml-Datei (mit Notentext) eine pdf-Datei erzeugen
+    $musicxml_to_pdf_command = 'MuseScore3.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/02.pdf";
+    shell_exec($musicxml_to_pdf_command);
+
+    //Erstellung der Uebungs-PDF anhand des bereits geanderten musicxml
+    //Ueberschrift anpassen
+    $xpath->query("//credit-words")->item(0)->nodeValue = $header;
+
+    //Ueber Texttags gehen und Text entfernen
+    $lyric_nodes = $xpath->query("//lyric/text");
+    foreach ($lyric_nodes as $lyric_node) {
+        $lyric_node->nodeValue = "";
+    }
+
+    //Aus musicxml-Datei (ohne Notentext) eine pdf-Datei erzeugen
+    $fh = fopen($output_dir . "/" . $random_sheet_file, "w");
+    fwrite($fh, $domdoc->saveXML());
+    fclose($fh);
+
+    //Aus musicxml-Datei (ohne Notentext) eine pdf-Datei erzeugen
+    $musicxml_to_pdf_command = 'MuseScore3.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/01.pdf";
+    shell_exec($musicxml_to_pdf_command);
+
+    //Uebungs-PDF und Loesungs-PDF zu einer pdf mergen
+    $pdf = new \Jurosh\PDFMerge\PDFMerger;
+    $pdf->addPDF($output_dir . "/01.pdf")->addPDF($output_dir . "/02.pdf");
+    $pdf->merge("file", $output_dir . "/" . date('Y-m-d') . " - " . $mode . ".pdf");
+
+    //Arbeitsdateien loeschen
+    unlink($output_dir . "/01.pdf");
+    unlink($output_dir . "/02.pdf");
+    unlink($output_dir . "/random.musicxml");
 }
-
-//musicxml-Datei mit random Noten und Notentext erzeugen
-$random_sheet_file = "random.musicxml";
-$fh = fopen($output_dir . "/" . $random_sheet_file, "w");
-fwrite($fh, $domdoc->saveXML());
-fclose($fh);
-
-//Aus musicxml-Datei (mit Notentext) eine pdf-Datei erzeugen
-$musicxml_to_pdf_command = 'MuseScore3.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/02.pdf";
-shell_exec($musicxml_to_pdf_command);
-
-//Erstellung der Uebungs-PDF anhand des bereits geanderten musicxml
-//Ueberschrift anpassen
-$xpath->query("//credit-words")->item(0)->nodeValue = $header;
-
-//Ueber Texttags gehen und Text entfernen
-$lyric_nodes = $xpath->query("//lyric/text");
-foreach ($lyric_nodes as $lyric_node) {
-    $lyric_node->nodeValue = "";
-}
-
-//Aus musicxml-Datei (ohne Notentext) eine pdf-Datei erzeugen
-$fh = fopen($output_dir . "/" . $random_sheet_file, "w");
-fwrite($fh, $domdoc->saveXML());
-fclose($fh);
-
-//Aus musicxml-Datei (ohne Notentext) eine pdf-Datei erzeugen
-$musicxml_to_pdf_command = 'MuseScore3.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/01.pdf";
-shell_exec($musicxml_to_pdf_command);
-
-//Uebungs-PDF und Loesungs-PDF zu einer pdf mergen
-$pdf = new \Jurosh\PDFMerge\PDFMerger;
-$pdf->addPDF($output_dir . "/01.pdf")->addPDF($output_dir . "/02.pdf");
-$pdf->merge("file", $output_dir . "/" . $mode . ".pdf");
-
-//Arbeitsdateien loeschen
-unlink($output_dir . "/01.pdf");
-unlink($output_dir . "/02.pdf");
-unlink($output_dir . "/random.musicxml");
