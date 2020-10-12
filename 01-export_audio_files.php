@@ -8,7 +8,7 @@
 $config = json_decode(file_get_contents("config.json"), true);
 
 //Mit welchem Tool sollen die Audiodateien konvertiert werden (Musescore stable vs. Nightly)
-$converter_tool = false ? "Musescore3.exe" : "nightly.exe";
+$converter_tool = true ? "Musescore3.exe" : "nightly.exe";
 
 //Projektname (Name des Unterordners in score_dir dem die Partitur liegt und Name des Unterordners im tiptoi_dir wohin Audio files exportiert werden)
 $project_name = $config["project_name"];
@@ -23,11 +23,16 @@ $split_bar_count = $project_config["split-bar-count"] ?? -1;
 //Projektverzeichnis. Hier werden die temp. musicxml und mscz-Dateien erstellt und die Audio-Dateien exportiert
 $project_dir = $config["tiptoi_dir"] . "/" . $project_name;
 
-//Wenn Projektverzeichnis noch nicht existiert, dieses anlegen
-if (!file_exists($project_dir)) {
-    echo "create folder " . $project_dir . "\n";
-    mkdir($project_dir, 0777, true);
+//Projektordner leeren, wenn er bereits existiert
+if (file_exists($project_dir)) {
+    echo "delete existing folder $project_dir\n";
+    array_map('unlink', glob("$project_dir/*.*"));
+    rmdir($project_dir);
 }
+
+//Projektordner anlegen
+echo "create empty folder " . $project_dir . "\n";
+mkdir($project_dir, 0777, true);
 
 //Ins Projektverzeichnis wechseln, dann muss nicht immer der Pfad angegeben werden ei cmd-Aufrufen
 chdir($project_dir);

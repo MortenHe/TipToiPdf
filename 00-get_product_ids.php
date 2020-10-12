@@ -9,4 +9,4 @@ foreach (glob("songs/*.json") as $file) {
 
 //Sortierte Liste der pruducts_ids ausgeben
 sort($product_ids);
-print_r($product_ids);
+echo "Nächste ID: " . ($product_ids[count($product_ids) - 1] + 1);
