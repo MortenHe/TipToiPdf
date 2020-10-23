@@ -84,10 +84,9 @@ fwrite($fh, "scripts:\n");
 //Stop-Script = stumme Audio-Datei, um Playback zu stoppen
 fwrite($fh, "  stop: P(stop)\n");
 
-//Count-in-Dateien (werden mit Uebungsdateien zusammengefuhert) und start / stop.mp3 in Projekt-Ordner kopieren (wird fuer GME-Erstellung benoetigt und ist bei jedem Projekt gleich)
-foreach (glob("../*.mp3") as $file) {
-    copy($file, $project_name . "/" . $file);
-}
+//start / stop.mp3 in Projekt-Ordner kopieren (wird fuer GME-Erstellung benoetigt und ist bei jedem Projekt gleich)
+copy("../start.mp3", "start.mp3");
+copy("../stop.mp3", "stop.mp3");
 
 //Ueber Rows (=Uebungen) des Projekts gehen
 foreach ($project_config["rows"] as $row) {
@@ -111,7 +110,7 @@ foreach ($project_config["rows"] as $row) {
         fwrite($fh, "  " . $code_id . ": P(" . $code_id . ")\n");
 
         //Einzaehldatei mit passendem Tempo, Taktart und ggf. Auftakt
-        $count_in_file = "count_in_" . $tempo . "_" . $count_in . ".mp3";
+        $count_in_file = "../count_in_" . $tempo . "_" . $count_in . ".mp3";
 
         //Wenn die Uebung als gesplittete Datei vorliegt (z.B. pick a pick Uebung 1 als split der full-Datei Uebung 1-4), ansonsten liegt Datei als vollstaendige Datei vor
         $audio_file = $split_bar_count > 0 ? "split_t_" . ($row["id"] - 1) . "_" . $tempo . ".mp3" : $row["id"] . "_" . $tempo . ".mp3";
@@ -139,7 +138,10 @@ foreach ($project_config["rows"] as $row) {
 }
 
 //PDF-Datei vorbereiten
-$mpdf = new Mpdf();
+$mpdf = new Mpdf([
+    'default_font' => 'arial'
+]);
+
 $mpdf->img_dpi = 1200;
 
 //CSS-Datei laden
@@ -205,7 +207,7 @@ function addTextToImage($image, $text, $font_size = 250) {
 
 //Dateisystem aufraeumen, temp. Dateien loeschen
 function cleanDir() {
-    foreach (glob("{split_*.mp3,count_*.mp3,oid-*.png,start.mp3,stop.mp3,*.yaml}", GLOB_BRACE) as $file) {
+    foreach (glob("{split_*.mp3,oid-*.png,start.mp3,stop.mp3,*.yaml}", GLOB_BRACE) as $file) {
         unlink($file);
     }
 }
