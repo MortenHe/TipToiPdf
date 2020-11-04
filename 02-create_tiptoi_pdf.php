@@ -20,6 +20,13 @@ $project_config = json_decode(file_get_contents(__DIR__ . "/songs/" . $project_n
 //Ueber alle configs gehen und sicherstellen, dass keine doppelten product-ids verwendet werden
 confirmUniqueProductIDs();
 
+//Bilder fuer untersch. Tempi einer Uebung
+$speed_arr = [
+    "snail",
+    "girl",
+    "cheetah"
+];
+
 //product-id dieses Produkts auslesen
 $product_id = $project_config["product-id"];
 
@@ -44,19 +51,19 @@ foreach (glob("full_*.mp3") as $full_file) {
     $split_time = (60 / $tempo) * 4 * $split_bar_count;
 
     //per ffmpeg full-Datei in einzelne Teile zerlegen
-    $out = shell_exec('ffmpeg -hide_banner -loglevel panic -i ' . $full_file . ' -f segment -segment_time ' . $split_time . ' -c copy split_t_%0d_' . $tempo . '.mp3');
+    $out = shell_exec('ffmpeg -hide_banner -loglevel panic -i ' . $full_file . ' -f segment -segment_time ' . $split_time . ' -c copy DONTSYNC_split_t_%0d_' . $tempo . '.mp3');
 }
 
 //HTML fuer TT-PDF-Datei mit Codes erstellen: Ueberschrift oben
 $html = "<table><tr><td class='t_l'><h1>" . $project_config["header"] . "</h1></td>";
 
-//Anmelde-Symbol
-$html .= "<td><img src='oid-" . $product_id . "-START.png' /></td>";
-
 //Instrumentenbild (key / git)
 foreach ($project_config["instruments"] as $instrument) {
     $html .= "<td class='t_r instrument'><img class='instrument_img' src='../" . $instrument . ".png' /></td>";
 }
+
+//Anmelde-Symbol
+$html .= "<td style='width:100px;' class='t_r'><img src='oid-" . $product_id . "-START.png' /></td>";
 $html .= "</tr></table>";
 
 //Info anzeigen, falls gesetzt (z.B. andere Taktart, Auftakt, etc.)
@@ -76,17 +83,17 @@ $fh = fopen($yaml_file, "w");
 fwrite($fh, "product-id: " . $product_id . "\n\n");
 
 //Sound bei Anmeldung ist fix
-fwrite($fh, "welcome: start\n\n");
+fwrite($fh, "welcome: DONTSYNC_start\n\n");
 
 //Scripts = Audiofiles, die gespielt werden
 fwrite($fh, "scripts:\n");
 
 //Stop-Script = stumme Audio-Datei, um Playback zu stoppen
-fwrite($fh, "  stop: P(stop)\n");
+fwrite($fh, "  stop: P(DONTSYNC_stop)\n");
 
 //start / stop.mp3 in Projekt-Ordner kopieren (wird fuer GME-Erstellung benoetigt und ist bei jedem Projekt gleich)
-copy("../start.mp3", "start.mp3");
-copy("../stop.mp3", "stop.mp3");
+copy("../start.mp3", "DONTSYNC_start.mp3");
+copy("../stop.mp3", "DONTSYNC_stop.mp3");
 
 //Ueber Rows (=Uebungen) des Projekts gehen
 foreach ($project_config["rows"] as $row) {
@@ -98,25 +105,27 @@ foreach ($project_config["rows"] as $row) {
     $td_row = "";
 
     //Ueber tempos einer Uebung gehen
-    foreach ($row["tempos"] as $tempo) {
+    foreach ($row["tempos"] as $index => $tempo) {
 
         //Code-Benennung fuer YAML-Datei und code-images
         $code_id = "t_" . $row["id"] . "_" . $tempo;
 
-        //OID-Code als Bild
-        $td_row .= "<td><img src='oid-" . $product_id . "-" . $code_id . ".png' /><img class='checkbox' width=20 height=20 src='" . __DIR__ . "/checkbox.svg' /></td>";
+        //Tempo Bild, OID-Code + Checkbox
+        $td_row .= "<td><img style='margin-left: 20px; margin-bottom: 3px' src='../speed_" . $speed_arr[$index] . ".png' /><br>";
+        $td_row .= "<img src='oid-" . $product_id . "-" . $code_id . ".png' />";
+        $td_row .= "<img class='checkbox' width=20 height=20 src='" . __DIR__ . "/checkbox.svg' /></td>";
 
         //Abspielcode in YAML-Datei als Script hinterlegen
-        fwrite($fh, "  " . $code_id . ": P(" . $code_id . ")\n");
+        fwrite($fh, "  " . $code_id . ": P(DONTSYNC_" . $code_id . ")\n");
 
         //Einzaehldatei mit passendem Tempo, Taktart und ggf. Auftakt
         $count_in_file = "../count_in_" . $tempo . "_" . $count_in . ".mp3";
 
         //Wenn die Uebung als gesplittete Datei vorliegt (z.B. pick a pick Uebung 1 als split der full-Datei Uebung 1-4), ansonsten liegt Datei als vollstaendige Datei vor
-        $audio_file = $split_bar_count > 0 ? "split_t_" . ($row["id"] - 1) . "_" . $tempo . ".mp3" : $row["id"] . "_" . $tempo . ".mp3";
+        $audio_file = $split_bar_count > 0 ? "DONTSYNC_split_t_" . ($row["id"] - 1) . "_" . $tempo . ".mp3" : $row["id"] . "_" . $tempo . ".mp3";
 
         //Count-in-Datei und Audio-Datei einer Uebung zu einer mp3 zusammenfuehren
-        $merge_command = 'ffmpeg -y -hide_banner -loglevel panic -i "concat:' . $count_in_file . '|' . $audio_file . '" -acodec copy ' . $code_id . '.mp3';
+        $merge_command = 'ffmpeg -y -hide_banner -loglevel panic -i "concat:' . $count_in_file . '|' . $audio_file . '" -acodec copy DONTSYNC_' . $code_id . '.mp3';
         shell_exec($merge_command);
     }
 
@@ -130,12 +139,14 @@ shell_exec('tttool assemble ' . $yaml_file);
 shell_exec('tttool oid-codes ' . $yaml_file . ' --pixel-size 5 --code-dim 20');
 
 //Ueber Rows (=Uebungen) und Tempos des Projekts gehen und png-Bilder anpassen (Tempo ueber Code legen)
+/*
 foreach ($project_config["rows"] as $row) {
-    foreach ($row["tempos"] as $tempo) {
-        $image = "oid-" . $product_id . "-t_" . $row["id"] . "_" . $tempo . ".png";
-        addTextToImage($image, $tempo);
-    }
+foreach ($row["tempos"] as $tempo) {
+$image = "oid-" . $product_id . "-t_" . $row["id"] . "_" . $tempo . ".png";
+addTextToImage($image, $tempo);
 }
+}
+ */
 
 //PDF-Datei vorbereiten
 $mpdf = new Mpdf([
@@ -160,8 +171,8 @@ $mpdf->Output("tt-" . $project_name . ".pdf");
 //Aus mscz-Datei eine PDF-Datei erzeugen
 $mscz_file = $config["score_dir"] . "/" . $project_name . ".mscz";
 $pdf_file = $project_name . ".pdf";
-$mscz_to_musicxml_command = 'MuseScore3.exe "' . $mscz_file . '" -o ' . $pdf_file;
-shell_exec($mscz_to_musicxml_command);
+$mscz_to_pdf_command = 'MuseScore3.exe "' . $mscz_file . '" -o ' . $pdf_file;
+shell_exec($mscz_to_pdf_command);
 
 //Dateisystem aufraeumen
 cleanDir();
@@ -207,7 +218,7 @@ function addTextToImage($image, $text, $font_size = 250) {
 
 //Dateisystem aufraeumen, temp. Dateien loeschen
 function cleanDir() {
-    foreach (glob("{split_*.mp3,oid-*.png,start.mp3,stop.mp3,*.yaml}", GLOB_BRACE) as $file) {
+    foreach (glob("{DONTSYNC_split_*.mp3,DONTSYNC_t_*.mp3,oid-*.png,DONTSYNC_start.mp3,DONTSYNC_stop.mp3,*.yaml}", GLOB_BRACE) as $file) {
         unlink($file);
     }
 }

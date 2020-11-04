@@ -10,13 +10,15 @@ RUN
 - mit Skript 03 (Anpassung über random_sheet_config.json) zufällige Noten erstellen
 
 TODO
+- README.txt -> README.md + Issues
 - project.json DIST für Piano / Git / beides
 - createAudio paralellisieren
 - Parts exportieren
+- Plugin zum Noten / Text löschen / unsichtbar -> Notenübung: Noten malen bzw. Notennamen hinschreiben
 - Anmelde und Stop-Symbol mit überlagerter Graphik ggf. auch maskieren (Anmeldebutton rund)
+- TTT-Grafiken auf Noten-PDF-Datei drucken
 - createSkript was beide Skripte startet
 - Skript 3. Output dir setzen für kürzere Pfade
-- Audioerstellung außerhalb von Cloud (wegen Einfügen und Löschen von Dateien)
 
 Mögliche Probleme
 - Count-in-Datei (z.B. 85_4_4.mp3) existiert noch nicht
