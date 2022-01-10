@@ -5,6 +5,7 @@
 //Druck bei 1200 dpi
 
 use Mpdf\Mpdf;
+
 require_once __DIR__ . '/vendor/autoload.php';
 
 //Allgemeine Config mit Pfaden zu Dateien und Projektname
@@ -178,7 +179,8 @@ shell_exec($mscz_to_pdf_command);
 cleanDir();
 
 //Ueber alle configs gehen und sicherstellen, dass keine doppelten product-ids verwendet werden
-function confirmUniqueProductIDs() {
+function confirmUniqueProductIDs()
+{
     $other_product_ids = [];
     foreach (glob("songs/*.json") as $file) {
 
@@ -199,7 +201,8 @@ function confirmUniqueProductIDs() {
 }
 
 //Bilddatei mit Text ueberlagern
-function addTextToImage($image, $text, $font_size = 250) {
+function addTextToImage($image, $text, $font_size = 250)
+{
 
     //Bildobjekt erstellen
     $png_image = imagecreatefrompng($image);
@@ -217,7 +220,8 @@ function addTextToImage($image, $text, $font_size = 250) {
 }
 
 //Dateisystem aufraeumen, temp. Dateien loeschen
-function cleanDir() {
+function cleanDir()
+{
     foreach (glob("{DONTSYNC_split_*.mp3,DONTSYNC_t_*.mp3,oid-*.png,DONTSYNC_start.mp3,DONTSYNC_stop.mp3,*.yaml}", GLOB_BRACE) as $file) {
         unlink($file);
     }

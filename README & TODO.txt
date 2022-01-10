@@ -1,7 +1,9 @@
 INSTALL
-- tttool.exe PATH hinzufügen
-- MuseScore3.exe in musescore/bin zu PATH hinzufügen
+- tttool.exe zu PATH hinzufügen (komplette Zip nach C:\TTTool entpacken und Pfad in System Variables Path)
+- MuseScore3.exe in musescore/bin zu PATH hinzufügen (C:\Program Files\MuseScore 3\bin in System Variables Path)
+- ffmpeg zu PATH hinzufügen (C:\ffmpeg\bin in System Variables Path) 
 - Musescore Template für Gitarre / Klavier / Gitarre + Klavier bearbeiten und speichern als project-str-v1.mscz, dabei Schlagzeugspur ausblenden per "i"
+- composer install
 
 RUN
 - Mit Skript 00 die nächste product-id ermitteln
@@ -19,6 +21,7 @@ TODO
 - TTT-Grafiken auf Noten-PDF-Datei drucken
 - createSkript was beide Skripte startet
 - Skript 3. Output dir setzen für kürzere Pfade
+- Path Variablen per Skript setzen
 
 Mögliche Probleme
 - Count-in-Datei (z.B. 85_4_4.mp3) existiert noch nicht

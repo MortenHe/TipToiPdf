@@ -131,7 +131,8 @@ else {
 cleanDir();
 
 //Audio-Datei erstellen
-function createAudioFile($filename_prefix, $output_filename_prefix, $domdoc) {
+function createAudioFile($filename_prefix, $output_filename_prefix, $domdoc)
+{
     global $converter_tool;
 
     //musicxml-Datei mit angepasstem XML (Tempo, ggf. gemutete Instrumente)
@@ -152,7 +153,8 @@ function createAudioFile($filename_prefix, $output_filename_prefix, $domdoc) {
 }
 
 //Dateisystem aufraeumen
-function cleanDir() {
+function cleanDir()
+{
 
     //musicxml- und mscz-Dateien entfernen
     foreach (glob("*.{musicxml,mscz}", GLOB_BRACE) as $file) {

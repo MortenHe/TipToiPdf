@@ -77,31 +77,33 @@ foreach ($modes as $mode) {
         //Vorzeichen auswerten
         switch ($accidental) {
 
-        //bei # immer "is" anhaengen
-        case "sharp":
-            $note_name .= "is";
-            break;
-
-        //bei b
-        case "flat":
-            switch ($note_name) {
-
-            //manche Noten mit "es"
-            case "d":case "g":
-                $note_name .= "es";
+                //bei # immer "is" anhaengen
+            case "sharp":
+                $note_name .= "is";
                 break;
 
-            //manche Noten nur mit "s"
-            case "e":case "a":
-                $note_name .= "s";
-                break;
+                //bei b
+            case "flat":
+                switch ($note_name) {
 
-            //Sonderfall b
-            case "h":
-                $note_name = "b";
+                        //manche Noten mit "es"
+                    case "d":
+                    case "g":
+                        $note_name .= "es";
+                        break;
+
+                        //manche Noten nur mit "s"
+                    case "e":
+                    case "a":
+                        $note_name .= "s";
+                        break;
+
+                        //Sonderfall b
+                    case "h":
+                        $note_name = "b";
+                        break;
+                }
                 break;
-            }
-            break;
         }
 
         //Notennamen mit passender Oktave als Notentext setzen
