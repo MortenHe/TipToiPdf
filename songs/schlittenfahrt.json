@@ -1,0 +1,22 @@
+{
+    "product-id": 531,
+    "header": "Schilttenfahrt",
+    "instruments": [
+        "key"
+    ],
+    "split-bar-count": 16,
+    "rows": [
+        {
+            "label": "Ü 1",
+            "id": 1,
+            "mute": [
+                1
+            ],
+            "tempos": [
+                60,
+                70,
+                80
+            ]
+        }
+    ]
+}
