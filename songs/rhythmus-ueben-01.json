@@ -1,0 +1,34 @@
+{
+    "product-id": 533,
+    "header": "Rhythmus üben 1",
+    "instruments": [
+        "key"
+    ],
+    "split-bar-count": 4,
+    "rows": [
+        {
+            "label": "Ü 1",
+            "id": 1,
+            "mute": [
+                1
+            ],
+            "tempos": [
+                60,
+                70,
+                80
+            ]
+        },
+        {
+            "label": "Ü 2",
+            "id": 2,
+            "mute": [
+                1
+            ],
+            "tempos": [
+                60,
+                70,
+                80
+            ]
+        }
+    ]
+}
