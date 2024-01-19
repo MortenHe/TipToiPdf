@@ -129,8 +129,8 @@ foreach ($modes as $mode) {
     fwrite($fh, $domdoc->saveXML());
     fclose($fh);
 
-    //Aus musicxml-Datei (mit Notentext) eine pdf-Datei erzeugen
-    $musicxml_to_pdf_command = 'MuseScore4.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/02.pdf";
+    //Aus musicxml-Datei (mit Notentext) eine pdf-Datei erzeugen, Style Datei damit 1. Zeile keine Einrueckung hat
+    $musicxml_to_pdf_command = 'MuseScore4.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/02.pdf --style no-indent-style.mss";
     shell_exec($musicxml_to_pdf_command);
 
     //Erstellung der Uebungs-PDF anhand des bereits geanderten musicxml
@@ -148,8 +148,8 @@ foreach ($modes as $mode) {
     fwrite($fh, $domdoc->saveXML());
     fclose($fh);
 
-    //Aus musicxml-Datei (ohne Notentext) eine pdf-Datei erzeugen
-    $musicxml_to_pdf_command = 'MuseScore4.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/01.pdf";
+    //Aus musicxml-Datei (ohne Notentext) eine pdf-Datei erzeugen, Style Datei damit 1. Zeile keine Einrueckung hat
+    $musicxml_to_pdf_command = 'MuseScore4.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/01.pdf --style no-indent-style.mss";
     shell_exec($musicxml_to_pdf_command);
 
     //Uebungs-PDF und Loesungs-PDF zu einer pdf mergen
