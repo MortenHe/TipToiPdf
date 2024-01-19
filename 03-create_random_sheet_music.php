@@ -9,25 +9,29 @@ require_once __DIR__ . '/vendor/autoload.php';
 $random_sheet_config = json_decode(file_get_contents("random_sheet_config.json"), true);
 $notes_config = json_decode(file_get_contents("notes_stock.json"), true);
 
+//Wo werden fertige Dateien abgelegt
+$output_dir = "random_sheets";
+
+//violin vs. bass
+$clef = "violin";
+$template = "random_sheet_template_{$clef}.musicxml";
+
 //Ueber Modi (david, maya,...) gehen und radnom notes erstellen
 $modes = $random_sheet_config["modes"];
 foreach ($modes as $mode) {
-    echo "create random sheet music for {$mode}\n";
+    echo "create random {$clef} sheet music for {$mode}\n";
 
     //Liste der Noten und Titel auslesen
-    $notes_stock = $notes_config[$mode];
-
-    //Wo werden fertige Dateien abgelegt
-    $output_dir = "random_sheets";
+    $notes_stock = $notes_config[$mode][$clef];
 
     //Template Datei laden, deren Noten mit random Noten ersetzt werden
     $domdoc = new DOMDocument();
-    $domdoc->loadXML(file_get_contents("random_sheet_template.musicxml"));
+    $domdoc->loadXML(file_get_contents($template));
     $xpath = new DOMXPath($domdoc);
 
     //Ueberschrift fuer Loesungs-pdf setzen
-    $header = "Notenübung " . ucfirst($mode) . " (" . date('d.m.Y') . ")";
-    $xpath->query("//credit-words")->item(0)->nodeValue = $header . " (Lösung)";
+    $header = ucfirst($clef) . "-Schlüssel Notenübung " . ucfirst($mode) . "\n(" . date('d.m.Y') . ")";
+    $xpath->query("//credit-words")->item(0)->nodeValue = $header . " - Lösung";
 
     //Ueber Noten der Partitur gehen und deren Wert + Text aendern
     $score_notes = $xpath->query("//note");
@@ -48,7 +52,16 @@ foreach ($modes as $mode) {
 
         //Notenhals nach oben oder unten setzen
         $stem_node = $xpath->query("stem", $score_note)->item(0);
-        $stem_node->nodeValue = (($random_octave > 1) || $random_octave === 1 && $random_step === "B") ? "down" : "up";
+        switch ($clef) {
+            case "violin":
+                $stem_dir = (($random_octave > 1) || $random_octave === 1 && $random_step === "B") ? "down" : "up";
+                break;
+
+            case "bass":
+                $stem_dir = (($random_octave < 0) || $random_octave === 0 && in_array($random_step, ["C", "D"])) ? "up" : "down";
+                break;
+        }
+        $stem_node->nodeValue = $stem_dir;
 
         //# oder b setzen falls gesetzt
         $accidental = "";
@@ -117,7 +130,7 @@ foreach ($modes as $mode) {
     fclose($fh);
 
     //Aus musicxml-Datei (mit Notentext) eine pdf-Datei erzeugen
-    $musicxml_to_pdf_command = 'MuseScore3.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/02.pdf";
+    $musicxml_to_pdf_command = 'MuseScore4.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/02.pdf";
     shell_exec($musicxml_to_pdf_command);
 
     //Erstellung der Uebungs-PDF anhand des bereits geanderten musicxml
@@ -136,13 +149,13 @@ foreach ($modes as $mode) {
     fclose($fh);
 
     //Aus musicxml-Datei (ohne Notentext) eine pdf-Datei erzeugen
-    $musicxml_to_pdf_command = 'MuseScore3.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/01.pdf";
+    $musicxml_to_pdf_command = 'MuseScore4.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/01.pdf";
     shell_exec($musicxml_to_pdf_command);
 
     //Uebungs-PDF und Loesungs-PDF zu einer pdf mergen
     $pdf = new \Jurosh\PDFMerge\PDFMerger;
     $pdf->addPDF($output_dir . "/01.pdf")->addPDF($output_dir . "/02.pdf");
-    $pdf->merge("file", $output_dir . "/" . date('Y-m-d') . " - " . $mode . ".pdf");
+    $pdf->merge("file", "{$output_dir}/" . date('Y-m-d') . " - {$mode}_{$clef}.pdf");
 
     //Arbeitsdateien loeschen
     unlink($output_dir . "/01.pdf");
