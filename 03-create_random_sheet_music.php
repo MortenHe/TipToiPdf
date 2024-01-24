@@ -2,26 +2,32 @@
 
 //Zufaellige Noten erstellen als Uebung
 
-//PDF-Tool laden
 require_once __DIR__ . '/vendor/autoload.php';
 
 //Config laden welche Modus aktiv ist und welche Noten erlaubt sind
 $random_sheet_config = json_decode(file_get_contents("random_sheet_config.json"), true);
 $notes_config = json_decode(file_get_contents("notes_stock.json"), true);
 
-//Wo werden fertige Dateien abgelegt
-$output_dir = "random_sheets";
+$program = "C:/Users/Martin/Desktop/ms4/bin/Musescore4.exe";
+//$program = "MuseScore4.exe";
+
+//read -> Notennamen erkennen, write -> Noten schreiben
+$type = "read";
+$header_suffix = $type === "read" ? "lesen" : "schreiben";
 
 //violin vs. bass
-$clef = "violin";
+$clef = "bass";
 $template = "random_sheet_template_{$clef}.musicxml";
+
+//Wo werden fertige Dateien abgelegt
+$output_dir = "random_sheets";
 
 //Ueber Modi (david, maya,...) gehen und radnom notes erstellen
 $modes = $random_sheet_config["modes"];
 foreach ($modes as $mode) {
-    echo "create random {$clef} sheet music for {$mode}\n";
+    echo "create random {type} {$clef} sheet music for {$mode}\n";
 
-    //Liste der Noten und Titel auslesen
+    //Liste der Noten auslesen
     $notes_stock = $notes_config[$mode][$clef];
 
     //Template Datei laden, deren Noten mit random Noten ersetzt werden
@@ -30,7 +36,7 @@ foreach ($modes as $mode) {
     $xpath = new DOMXPath($domdoc);
 
     //Ueberschrift fuer Loesungs-pdf setzen
-    $header = ucfirst($clef) . "-Schlüssel Notenübung " . ucfirst($mode) . "\n(" . date('d.m.Y') . ")";
+    $header = ucfirst($clef) . "-Schlüssel: Noten {$header_suffix} [" . ucfirst($mode) . "]\n(" . date('d.m.Y') . ")";
     $xpath->query("//credit-words")->item(0)->nodeValue = $header . " - Lösung";
 
     //Ueber Noten der Partitur gehen und deren Wert + Text aendern
@@ -67,27 +73,21 @@ foreach ($modes as $mode) {
         $accidental = "";
         if (isset($random_note[2])) {
 
-            //Alter-Tag erstellen
+            //Alter-Tag erstellen und anpassender Stelle einfeugen
             $alter_node = $domdoc->createElement("alter");
             $alter_node->nodeValue = $random_note[2] === "#" ? 1 : -1;
-
-            //Alter-Tag an passender Stelle einfuegen
             $pitch_node = $xpath->query("pitch", $score_note)->item(0);
             $pitch_node->insertBefore($alter_node, $octave_node);
 
-            //Accidental-Tag erstellen
+            //Accidental-Tag erstellen und an passender Stelle einfuegen
             $acc_node = $domdoc->createElement("accidental");
             $accidental = $random_note[2] === "#" ? "sharp" : "flat";
             $acc_node->nodeValue = $accidental;
-
-            //Accidental-Tag an passender Stelle einfuegen
             $score_note->insertBefore($acc_node, $stem_node);
         }
 
         //Notennamen fuer Loesungs-PDF ermitteln. Sondernfall h vs. b
         $note_name = $random_step === "B" ? "h" : strtolower($random_step);
-
-        //Vorzeichen auswerten
         switch ($accidental) {
 
                 //bei # immer "is" anhaengen
@@ -120,42 +120,59 @@ foreach ($modes as $mode) {
         }
 
         //Notennamen mit passender Oktave als Notentext setzen
-        $xpath->query("lyric/text", $score_note)->item(0)->nodeValue = $note_name . " " . $random_octave;
+        $xpath->query("lyric/text", $score_note)->item(0)->nodeValue = $note_name . $random_octave;
     }
 
-    //musicxml-Datei mit random Noten und Notentext erzeugen
+    //Aus musicxml-Datei (mit Notentext / Notenkoepfen) eine pdf-Datei erzeugen, Style Datei damit 1. Zeile keine Einrueckung hat
     $random_sheet_file = "random.musicxml";
     $fh = fopen($output_dir . "/" . $random_sheet_file, "w");
     fwrite($fh, $domdoc->saveXML());
     fclose($fh);
-
-    //Aus musicxml-Datei (mit Notentext) eine pdf-Datei erzeugen, Style Datei damit 1. Zeile keine Einrueckung hat
-    $musicxml_to_pdf_command = 'MuseScore4.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/02.pdf --style no-indent-style.mss";
+    $musicxml_to_pdf_command = "{$program} {$output_dir}/{$random_sheet_file} -o {$output_dir}/02.pdf --style no-indent-style.mss";
     shell_exec($musicxml_to_pdf_command);
 
     //Erstellung der Uebungs-PDF anhand des bereits geanderten musicxml
     //Ueberschrift anpassen
     $xpath->query("//credit-words")->item(0)->nodeValue = $header;
 
-    //Ueber Texttags gehen und Text entfernen
-    $lyric_nodes = $xpath->query("//lyric/text");
-    foreach ($lyric_nodes as $lyric_node) {
-        $lyric_node->nodeValue = "";
+    //Uebungsseite anpassen: Noten entfernen vs. Notennamen entfernen
+    switch ($type) {
+
+            //Beim "Noten lesen" ueber Texttages gehen und Text entfernen
+        case "read":
+            $lyric_nodes = $xpath->query("//lyric/text");
+            foreach ($lyric_nodes as $lyric_node) {
+                $lyric_node->nodeValue = "";
+            }
+            break;
+
+            //Beim "Noten schreiben" Stem und Notehead ausblenden
+        case "write":
+            $score_notes = $xpath->query("//note");
+            foreach ($score_notes as $score_note) {
+
+                //Stem ausblenden
+                $lyric = $xpath->query('stem', $score_note)->item(0)->nodeValue = "none";
+
+                //Notehead none vor lyrics-Tag einfuegen
+                $lyric = $xpath->query('lyric', $score_note)->item(0);
+                $notehead = $domdoc->createElement('notehead', 'none');
+                $score_note->insertBefore($notehead, $lyric);
+            }
+            break;
     }
 
-    //Aus musicxml-Datei (ohne Notentext) eine pdf-Datei erzeugen
+    //Aus musicxml-Datei (ohne Notentext / Notenkoepfe) eine pdf-Datei erzeugen
     $fh = fopen($output_dir . "/" . $random_sheet_file, "w");
     fwrite($fh, $domdoc->saveXML());
     fclose($fh);
-
-    //Aus musicxml-Datei (ohne Notentext) eine pdf-Datei erzeugen, Style Datei damit 1. Zeile keine Einrueckung hat
-    $musicxml_to_pdf_command = 'MuseScore4.exe "' . $output_dir . "/" . $random_sheet_file . '" -o ' . $output_dir . "/01.pdf --style no-indent-style.mss";
+    $musicxml_to_pdf_command = "{$program} {$output_dir}/{$random_sheet_file} -o {$output_dir}/01.pdf --style no-indent-style.mss";
     shell_exec($musicxml_to_pdf_command);
 
     //Uebungs-PDF und Loesungs-PDF zu einer pdf mergen
     $pdf = new \Jurosh\PDFMerge\PDFMerger;
     $pdf->addPDF($output_dir . "/01.pdf")->addPDF($output_dir . "/02.pdf");
-    $pdf->merge("file", "{$output_dir}/" . date('Y-m-d') . " - {$mode}_{$clef}.pdf");
+    $pdf->merge("file", "{$output_dir}/" . date('Y-m-d') . " - {$mode}_{$type}_{$clef}.pdf");
 
     //Arbeitsdateien loeschen
     unlink($output_dir . "/01.pdf");
