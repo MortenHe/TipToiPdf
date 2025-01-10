@@ -8,15 +8,14 @@ require_once __DIR__ . '/vendor/autoload.php';
 $random_sheet_config = json_decode(file_get_contents("random_sheet_config.json"), true);
 $notes_config = json_decode(file_get_contents("notes_stock.json"), true);
 
-$program = "C:/Users/Martin/Desktop/ms4/bin/Musescore4.exe";
-//$program = "MuseScore4.exe";
+$program = "MuseScore4.exe";
 
 //read -> Notennamen erkennen, write -> Noten schreiben
 $type = "read";
 $header_suffix = $type === "read" ? "lesen" : "schreiben";
 
 //violin vs. bass
-$clef = "bass";
+$clef = "violin";
 $template = "random_sheet_template_{$clef}.musicxml";
 
 //Wo werden fertige Dateien abgelegt
