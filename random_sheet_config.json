@@ -1,5 +1,7 @@
 {
     "modes": [
         "steffi"
-    ]
+    ],
+    "type": "read",
+    "clef": "violin"
 }

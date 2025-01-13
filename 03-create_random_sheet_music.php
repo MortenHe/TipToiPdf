@@ -11,11 +11,11 @@ $notes_config = json_decode(file_get_contents("notes_stock.json"), true);
 $program = "MuseScore4.exe";
 
 //read -> Notennamen erkennen, write -> Noten schreiben
-$type = "read";
+$type = $random_sheet_config["type"];
 $header_suffix = $type === "read" ? "lesen" : "schreiben";
 
 //violin vs. bass
-$clef = "violin";
+$clef = $random_sheet_config["clef"];
 $template = "random_sheet_template_{$clef}.musicxml";
 
 //Wo werden fertige Dateien abgelegt
@@ -171,10 +171,31 @@ foreach ($modes as $mode) {
     //Uebungs-PDF und Loesungs-PDF zu einer pdf mergen
     $pdf = new \Jurosh\PDFMerge\PDFMerger;
     $pdf->addPDF($output_dir . "/01.pdf")->addPDF($output_dir . "/02.pdf");
+
+    //Beim Noten lesen noch eine Uebungdatei erstellen ohne Notennamen, aber mit anderer Ueberschrift (Diese Noten sollen geuebt und  Unterricht gespielt werden)
+    if ($type === "read") {
+        $xpath->query("//credit-words")->item(0)->nodeValue =
+            ucfirst($clef) . "-Schlüssel: Notenübung [" . ucfirst($mode) . "]\n(" . date('d.m.Y') . ")";
+
+        //Aus musicxml-Datei (ohne Notentext / Notenkoepfe) eine pdf-Datei erzeugen
+        $fh = fopen($output_dir . "/" . $random_sheet_file, "w");
+        fwrite($fh, $domdoc->saveXML());
+        fclose($fh);
+        $musicxml_to_pdf_command = "{$program} {$output_dir}/{$random_sheet_file} -o {$output_dir}/03.pdf --style no-indent-style.mss";
+        shell_exec($musicxml_to_pdf_command);
+
+        //3. pdf-Seite anhaengen
+        $pdf->addPDF($output_dir . "/03.pdf");
+    }
     $pdf->merge("file", "{$output_dir}/" . date('Y-m-d') . " - {$mode}_{$type}_{$clef}.pdf");
 
     //Arbeitsdateien loeschen
     unlink($output_dir . "/01.pdf");
     unlink($output_dir . "/02.pdf");
     unlink($output_dir . "/random.musicxml");
+
+    //Bei Notenlesen die Zusatzdabei loeschen
+    if ($type === "read") {
+        unlink($output_dir . "/03.pdf");
+    }
 }
